@@ -120,6 +120,7 @@ Send SMS messages with validation and cost estimation.
 - `to` (required): Recipient phone number in international format
 - `message` (required): SMS message text
 - `from` (optional): Custom sender ID or phone number (see security notes below)
+- `flashsms` (optional): Set to "yes" for flash SMS (see Flash SMS limitations below)
 - `dryRun` (optional): Override environment DRY_RUN setting
 
 **FROM Parameter Security:**
@@ -136,6 +137,11 @@ Send SMS to +46701234567 with message "Hello from Claude!"
 ```
 Send SMS to +46701234567 from "MyApp" with message "Your order is ready!"
 ```
+```
+Send flash SMS to +46701234567 with message "URGENT: System maintenance in 5 minutes"
+```
+
+> ⚠️ **Flash SMS Note**: Flash SMS may not display correctly on iPhone/iPad devices. See [Flash SMS section](#flash-sms) below for device compatibility details.
 
 > 🔒 **Dry Run Safety**: By default, `DRY_RUN=true` simulates SMS sending without actual delivery or charges. Set to `false` only when ready to send real messages.
 
@@ -237,6 +243,22 @@ Analyze SMS delivery success rates and statistics.
 - **Bulk Operations**: For large batches (CSV files, etc.), you'll need to pace your requests
 - **Recommendation**: For bulk sending, send SMS in batches of 90-95 per minute with 1-minute pauses
 - **Error Handling**: Rate limit errors are returned clearly with instructions to retry after waiting
+
+### Flash SMS
+- **Use Case**: Urgent notifications that display immediately
+- **Behavior**: Shows on screen instantly, not stored in inbox
+- **Cost**: Same as regular SMS
+- **Device Compatibility**: 
+  - ✅ **Android**: Displays as popup overlay (supported)
+  - ❌ **iPhone/iPad**: Shows as regular SMS (not supported by iOS)
+  - ✅ **Feature Phones**: Usually supported
+  - ⚠️ **Carrier-dependent**: Some networks may not support Flash SMS
+
+**Important**: Flash SMS is **not supported by iPhone/iPad devices**. iOS ignores the flash flag and displays Flash SMS messages as regular SMS messages in the Messages app. 
+
+**Learn More:**
+- [46elks Flash SMS Tutorial](https://46elks.se/tutorials/flash-sms) - Complete guide to Flash SMS
+- [46elks SMS API Documentation](https://46elks.se/docs/send-sms) - Technical implementation details
 
 
 ## Usage Examples
