@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)](https://nodejs.org/)
+![TypeScript](https://img.shields.io/npm/types/mailtrap?logo=typescript&logoColor=white&label=%20)
 
 MCP server for 46elks SMS API - Send SMS messages through Swedish telecommunications infrastructure.
 
@@ -110,7 +111,7 @@ For detailed VS Code setup instructions, see: [VS Code MCP Documentation](https:
 
 ## Available Tools
 
-> **Note**: This MCP server currently supports **sending SMS only**. SMS receiving functionality is not implemented at this time.
+> **Note**: This MCP server supports **sending SMS and checking message history**. You can send SMS and check for incoming replies using the `get_sms_messages` tool. Real-time SMS receiving (webhooks) is not implemented - use message history checking instead.
 
 ### `send_sms`
 Send SMS messages with validation and cost estimation.
@@ -149,10 +150,15 @@ Retrieve SMS message history with filtering options.
 - `direction` (optional): "inbound", "outbound", or "both" (default: "both")
 - `limit` (optional): Number of messages to retrieve (1-100, default: 10)
 
-**Example:**
+**Examples:**
 ```
 Get my last 20 SMS messages
 ```
+```
+Show me only incoming SMS messages from the last hour
+```
+
+> 💡 **Checking Responses**: Use this tool to check if someone has replied to your SMS! While not instant like a chat, you can easily see incoming messages to your 46elks phone number. Perfect for checking customer responses or confirmations.
 
 ### `check_sms_status`
 Check delivery status and details of sent messages.
@@ -332,24 +338,25 @@ npm start
 - Input validation prevents malicious phone numbers and messages
 - No sensitive data is logged or stored
 
-### Sender ID Security & Anti-Spoofing
-**Problem**: 46elks allows any sender ID without verification, enabling potential impersonation and SMS spoofing.
+### Enhanced Security Features
 
-**Our Solution**: We've implemented responsible sender ID validation to prevent misuse:
+**46elks Flexibility**: 46elks provides excellent flexibility in sender ID options, allowing custom sender names and phone numbers for various business needs.
 
-- ✅ **Default Protection**: Uses your verified `ELKS_PHONE_NUMBER` as default sender
-- ✅ **Impersonation Prevention**: Blocks suspicious sender IDs (BANK, POLICE, GOVERNMENT, etc.)
-- ✅ **Format Validation**: Enforces 46elks requirements (max 11 chars, must start with letter)
-- ✅ **Permission Warnings**: Alerts when using unverified phone numbers as sender
-- ✅ **Best Practice Guidance**: Encourages use of legitimate business names or owned numbers
+**Our Additional Security Layer**: To help users follow best practices and avoid common pitfalls, we've added responsible validation features:
 
-**Why This Matters**: While 46elks API allows any sender ID for flexibility, we add validation to prevent:
-- Impersonating official entities (banks, government, police)
-- Spoofing other businesses or services  
-- Accidental misuse that could violate SMS regulations
-- Creating SMS that appear to come from numbers you don't own
+- ✅ **Smart Defaults**: Uses your verified `ELKS_PHONE_NUMBER` as default sender for reliable delivery
+- ✅ **Best Practice Guidance**: Helps avoid sender IDs that might be filtered (BANK, POLICE, etc.)
+- ✅ **Format Validation**: Ensures sender IDs meet 46elks requirements (max 11 chars, must start with letter)
+- ✅ **Professional Recommendations**: Encourages use of legitimate business names or owned numbers
+- ✅ **Permission Awareness**: Alerts when using phone numbers as sender IDs
 
-This approach balances flexibility with responsibility, protecting both users and SMS recipients.
+**Benefits**: These features help ensure:
+- Better SMS delivery rates by following carrier best practices
+- Professional appearance and brand consistency
+- Compliance with SMS regulations and carrier guidelines
+- Reduced risk of messages being filtered or blocked
+
+This approach enhances 46elks' powerful API with additional guidance for optimal results.
 
 ## Troubleshooting
 
