@@ -1,0 +1,46 @@
+{
+  "name": "46elks-mcp-server",
+  "version": "0.1.0",
+  "description": "Unofficial MCP server for 46elks SMS API - Send SMS messages through Swedish telecommunications infrastructure",
+  "main": "dist/index.js",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "lint": "echo 'Linting not configured yet'",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "46elks",
+    "sms",
+    "sweden",
+    "claude",
+    "ai",
+    "assistant",
+    "telecommunications"
+  ],
+  "author": "Community Contributor",
+  "license": "MIT", 
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/palhamel/46elks-mcp-server.git"
+  },
+  "homepage": "https://github.com/palhamel/46elks-mcp-server#readme",
+  "bugs": {
+    "url": "https://github.com/palhamel/46elks-mcp-server/issues"
+  },
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.4",
+    "@types/node": "^20.19.11",
+    "typescript": "^5.9.2"
+  },
+  "devDependencies": {}
+}
