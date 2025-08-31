@@ -120,7 +120,6 @@ Send SMS messages with validation and cost estimation.
 - `to` (required): Recipient phone number in international format
 - `message` (required): SMS message text
 - `from` (optional): Custom sender ID or phone number (see security notes below)
-- `flashsms` (optional): Set to "yes" for flash SMS (displays immediately, not stored)
 - `dryRun` (optional): Override environment DRY_RUN setting
 
 **FROM Parameter Security:**
@@ -136,9 +135,6 @@ Send SMS to +46701234567 with message "Hello from Claude!"
 ```
 ```
 Send SMS to +46701234567 from "MyApp" with message "Your order is ready!"
-```
-```
-Send flash SMS to +46701234567 with message "URGENT: System maintenance in 5 minutes"
 ```
 
 > 🔒 **Dry Run Safety**: By default, `DRY_RUN=true` simulates SMS sending without actual delivery or charges. Set to `false` only when ready to send real messages.
@@ -242,20 +238,6 @@ Analyze SMS delivery success rates and statistics.
 - **Recommendation**: For bulk sending, send SMS in batches of 90-95 per minute with 1-minute pauses
 - **Error Handling**: Rate limit errors are returned clearly with instructions to retry after waiting
 
-### Flash SMS
-- **Use Case**: Urgent notifications that display immediately on recipient's screen
-- **Behavior**: Shows on screen instantly, bypasses SMS inbox (not stored)
-- **Cost**: Same as regular SMS
-- **Perfect For**: Emergency alerts, time-sensitive notifications, system alerts
-- **Usage**: Set `flashsms` parameter to `"yes"` in the `send_sms` tool
-
-**Flash SMS Examples:**
-```
-Send flash SMS to +46701234567 with message "URGENT: System maintenance in 5 minutes"
-```
-```
-Send an emergency flash SMS to +46701234567 saying "Building evacuation required - exit immediately"
-```
 
 ## Usage Examples
 
