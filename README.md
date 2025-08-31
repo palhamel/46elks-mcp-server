@@ -243,9 +243,19 @@ Analyze SMS delivery success rates and statistics.
 - **Error Handling**: Rate limit errors are returned clearly with instructions to retry after waiting
 
 ### Flash SMS
-- **Use Case**: Urgent notifications that display immediately
-- **Behavior**: Shows on screen instantly, not stored in inbox
+- **Use Case**: Urgent notifications that display immediately on recipient's screen
+- **Behavior**: Shows on screen instantly, bypasses SMS inbox (not stored)
 - **Cost**: Same as regular SMS
+- **Perfect For**: Emergency alerts, time-sensitive notifications, system alerts
+- **Usage**: Set `flashsms` parameter to `"yes"` in the `send_sms` tool
+
+**Flash SMS Examples:**
+```
+Send flash SMS to +46701234567 with message "URGENT: System maintenance in 5 minutes"
+```
+```
+Send an emergency flash SMS to +46701234567 saying "Building evacuation required - exit immediately"
+```
 
 ## Usage Examples
 
@@ -269,19 +279,36 @@ How much would it cost to send "Long message..." to +46701234567?
 What's my current 46elks account balance?
 ```
 
-### Bulk Operations Planning
+### Bulk SMS Operations
+
+**⚠️ Important**: For large-scale SMS sending (100+ messages), we strongly recommend using 46elks' dedicated bulk SMS service instead of this MCP server.
+
+**Recommended for Bulk SMS:**
+- **46elks JustSend**: [justsend.46elks.com](https://justsend.46elks.com/)
+- **Features**: CSV upload, scheduling, delivery reports, bulk pricing
+- **Benefits**: No rate limits, optimized for large volumes, professional bulk tools
+
+**If Using This MCP Server for Small Batches (<100 SMS):**
 ```
-I have a CSV file with 500 phone numbers. Help me plan bulk SMS sending within rate limits.
+I have 50 customer phone numbers. Help me send promotional SMS within rate limits.
 ```
 ```
-Estimate the cost to send "Event reminder" to 200 customers, and tell me how long it will take with rate limits.
+Estimate the cost to send "Event reminder" to 30 customers, and plan the timing.
 ```
 
-**Rate Limit Guidance**: For 500 SMS messages at 90 per minute:
-- **Time Required**: ~6 minutes (5.5 batches + pauses)
-- **Cost Estimation**: Use `estimate_sms_cost` first
-- **Batching Strategy**: Send in groups of 90 with 1-minute breaks
-- **Safety First**: Always test with `DRY_RUN=true` before bulk operations
+**Small Batch Strategy** (Under 100 SMS):
+- **Batch Size**: Maximum 90 SMS per minute to stay under limits
+- **Time Required**: ~1 minute per 90 messages + brief pauses
+- **Cost Planning**: Use `estimate_sms_cost` for accurate pricing
+- **Safety First**: Always test with `DRY_RUN=true` before sending
+- **Monitoring**: Check account balance before starting
+
+**Why Use JustSend for Large Volumes:**
+- **No Rate Limits**: Send thousands of SMS efficiently  
+- **CSV Support**: Upload contact lists directly
+- **Professional Tools**: Scheduling, templates, delivery tracking
+- **Bulk Pricing**: Better rates for high volumes
+- **Reliability**: Purpose-built for bulk operations
 
 ## Testing
 
@@ -382,11 +409,11 @@ This approach enhances 46elks' powerful API with additional guidance for optimal
 - Use cost estimation tools to plan large batches before sending
 - Consider implementing delays between messages for CSV bulk operations
 
-**Bulk SMS Best Practices**
-- **Large Lists**: Process CSV files in chunks of 90 messages per minute
-- **Timing**: Add 60-second pauses between batches
-- **Monitoring**: Check account balance before starting large batches
-- **Testing**: Always test with small batches first using `DRY_RUN=true`
+**MCP Server Best Practices** (Small Batches Only)
+- **Recommended Limit**: Use this MCP server for <100 SMS at a time
+- **Large Operations**: Use [justsend.46elks.com](https://justsend.46elks.com/) for bulk SMS instead
+- **Rate Limits**: Stay under 90 SMS per minute if using MCP server
+- **Testing**: Always test with `DRY_RUN=true` before any batch sending
 
 **Build errors**
 - Ensure Node.js 20+ LTS is installed (Node.js 18 is End of Life)
