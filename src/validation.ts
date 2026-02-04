@@ -120,6 +120,15 @@ export const validateSmsMessage = (
 
 /**
  * Sender ID validation (from field) with responsible usage checks
+ *
+ * Validates the sender ID used in SMS messages. Sender IDs can be:
+ * - Phone numbers: Must be valid international format (with +)
+ * - Alphanumeric: Max 11 chars, must start with letter, letters/numbers only
+ *
+ * Blocks common impersonation attempts (BANK, POLICE, etc.) to prevent misuse.
+ *
+ * @param senderId - The sender ID to validate (phone number or alphanumeric name)
+ * @returns Validation result with warnings for phone number usage
  */
 export const validateSenderId = (
   senderId: string
