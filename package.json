@@ -11,9 +11,18 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
-    "lint": "echo 'Linting not configured yet'",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "clean": "rm -rf dist"
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist coverage",
+    "prepublishOnly": "npm run clean && npm run build",
+    "pretest": "npm run type-check"
   },
   "keywords": [
     "mcp",
@@ -27,7 +36,7 @@
     "telecommunications"
   ],
   "author": "Community Contributor",
-  "license": "MIT", 
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/palhamel/46elks-mcp-server.git"
@@ -42,5 +51,14 @@
     "@types/node": "^20.19.11",
     "typescript": "^5.9.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "@vitest/ui": "^4.0.18",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "prettier": "^3.8.1",
+    "vitest": "^4.0.18"
+  }
 }

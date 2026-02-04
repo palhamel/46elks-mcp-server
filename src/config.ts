@@ -13,15 +13,13 @@ export const config: Config = {
   elksPhoneNumber: process.env.ELKS_PHONE_NUMBER || '',
   webhookUrl: process.env.WEBHOOK_URL,
   port: parseInt(process.env.PORT || '3001', 10),
-  dryRun: process.env.DRY_RUN === 'true' || process.env.NODE_ENV === 'development'
+  dryRun: process.env.DRY_RUN === 'true' || process.env.NODE_ENV === 'development',
 };
 
 export const validateConfig = (): void => {
-  const requiredFields: Array<keyof Pick<Config, 'elksUsername' | 'elksPassword' | 'elksPhoneNumber'>> = [
-    'elksUsername',
-    'elksPassword',
-    'elksPhoneNumber'
-  ];
+  const requiredFields: Array<
+    keyof Pick<Config, 'elksUsername' | 'elksPassword' | 'elksPhoneNumber'>
+  > = ['elksUsername', 'elksPassword', 'elksPhoneNumber'];
 
   const missingFields = requiredFields.filter(field => !config[field]);
 
@@ -30,10 +28,10 @@ export const validateConfig = (): void => {
       // Convert camelCase to UPPER_SNAKE_CASE
       return field.replace(/([A-Z])/g, '_$1').toUpperCase();
     });
-    
+
     throw new Error(
       `Missing required environment variables: ${envVarNames.join(', ')}\n` +
-      'Please check your MCP client configuration (Claude Desktop config.json or VS Code mcp.json).'
+        'Please check your MCP client configuration (Claude Desktop config.json or VS Code mcp.json).'
     );
   }
 

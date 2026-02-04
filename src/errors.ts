@@ -3,7 +3,10 @@
  */
 
 export class SmsError extends Error {
-  constructor(message: string, public code?: string) {
+  constructor(
+    message: string,
+    public code?: string
+  ) {
     super(message);
     this.name = 'SmsError';
   }
@@ -17,7 +20,10 @@ export class ValidationError extends SmsError {
 }
 
 export class ElksApiError extends SmsError {
-  constructor(message: string, public statusCode?: number) {
+  constructor(
+    message: string,
+    public statusCode?: number
+  ) {
     super(message, 'ELKS_API_ERROR');
     this.name = 'ElksApiError';
   }
@@ -46,13 +52,13 @@ export const formatErrorResponse = (error: unknown): { type: 'text'; text: strin
     errorMessage = 'An unknown error occurred';
   }
 
-  const formattedMessage = errorCode 
+  const formattedMessage = errorCode
     ? `Error (${errorCode}): ${errorMessage}`
     : `Error: ${errorMessage}`;
 
   return {
     type: 'text',
-    text: formattedMessage
+    text: formattedMessage,
   };
 };
 
