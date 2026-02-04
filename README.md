@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)](https://nodejs.org/)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript&logoColor=white)
+[![CI](https://github.com/palhamel/46elks-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/palhamel/46elks-mcp-server/actions/workflows/ci.yml)
 
 MCP server for 46elks SMS API - Send SMS messages through Swedish telecommunications infrastructure.
 
@@ -55,7 +56,7 @@ npm run build
 
 ### Step 3: Configure Your MCP Client
 
-Choose your preferred MCP client:
+Choose your preferred MCP client. See [examples/](./examples/) for complete configuration examples.
 
 #### Option A: Claude Desktop
 
@@ -336,6 +337,15 @@ cd 46elks-mcp-server
 # Install dependencies
 npm install
 
+# Run tests
+npm test
+
+# Run linter
+npm run lint
+
+# Format code
+npm run format
+
 # Start development mode (auto-rebuild)
 npm run dev
 
@@ -346,20 +356,56 @@ npm run build
 npm start
 ```
 
+### Available Scripts
+
+- `npm run build` - Compile TypeScript to JavaScript
+- `npm run dev` - Watch mode for development
+- `npm test` - Run test suite
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Generate test coverage report
+- `npm run lint` - Check code with ESLint
+- `npm run lint:fix` - Auto-fix linting issues
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
+- `npm run type-check` - Type check without emitting files
+
 ### Project Structure
 
 ```
 46elks-mcp-server/
 ├── src/
+│   ├── __tests__/        # Unit tests
 │   ├── index.ts          # Main MCP server
 │   ├── config.ts         # Configuration management
 │   ├── elks-client.ts    # 46elks API client
 │   ├── validation.ts     # Input validation
-│   └── utils.ts          # Utility functions
+│   ├── utils.ts          # Utility functions
+│   └── errors.ts         # Error handling
+├── examples/             # Example configurations
 ├── dist/                 # Compiled JavaScript
+├── .github/              # GitHub Actions workflows
 ├── package.json
 └── README.md
 ```
+
+### Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on:
+- Setting up your development environment
+- Running tests and linters
+- Submitting pull requests
+- Code style and conventions
+
+### Code Quality
+
+This project uses:
+- **TypeScript** for type safety
+- **ESLint** for code linting
+- **Prettier** for code formatting
+- **Vitest** for testing with 33+ unit tests
+- **GitHub Actions** for CI/CD
+
+All code is automatically tested and linted on push.
 
 ## Security
 
