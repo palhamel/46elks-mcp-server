@@ -39,7 +39,7 @@ When reporting a vulnerability, please include:
 
 ## OWASP MCP Top 10 Compliance
 
-This MCP server has been hardened following the [OWASP MCP Security Top 10](https://owasp.org/www-project-mcp-security/) guidelines:
+This MCP server has been hardened following the [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) guidelines:
 
 | OWASP ID | Risk | Mitigation Status |
 |----------|------|-------------------|

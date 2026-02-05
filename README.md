@@ -8,7 +8,7 @@
 
 MCP server for 46elks SMS API - Send SMS messages through Swedish telecommunications infrastructure.
 
-Enable Claude Desktop, VS Code Copilot, and other MCP-compatible tools to send SMS messages through Sweden's leading SMS provider. Built with security-first design following [OWASP MCP Top 10](https://owasp.org/www-project-mcp-security/) guidelines, including rate limiting, audit logging, and input sanitization.
+Enable Claude Desktop, VS Code Copilot, and other MCP-compatible tools to send SMS messages through Sweden's leading SMS provider. Built with security-first design following [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) guidelines, including rate limiting, audit logging, and input sanitization.
 
 > ⚠️ **Disclaimer**: This is an unofficial community project and is not affiliated with or endorsed by 46elks AB.
 
@@ -412,7 +412,7 @@ All code is automatically tested and linted on push.
 
 ## Security
 
-This MCP server has been hardened following [OWASP MCP Security Top 10](https://owasp.org/www-project-mcp-security/) guidelines. See [SECURITY.md](./SECURITY.md) for full details.
+This MCP server has been hardened following [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) guidelines. See [SECURITY.md](./SECURITY.md) for full details.
 
 ### API & Credential Security
 - API credentials are passed through MCP client configuration (not stored in code)
