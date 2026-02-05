@@ -12,7 +12,12 @@ import {
 import { validateConfig, config } from './config.js';
 import { ElksClient } from './elks-client.js';
 import { formatErrorResponse, ConfigurationError, handleValidationError } from './errors.js';
-import { validatePhoneNumber, validateSmsMessage, validateSenderId, validateMessageId } from './validation.js';
+import {
+  validatePhoneNumber,
+  validateSmsMessage,
+  validateSenderId,
+  validateMessageId,
+} from './validation.js';
 import {
   formatSmsResponse,
   formatSmsHistory,
@@ -20,7 +25,7 @@ import {
   formatDeliveryStatistics,
 } from './utils.js';
 import { createAuditContext } from './audit.js';
-import { checkRateLimit, RateLimitError } from './rate-limit.js';
+import { checkRateLimit } from './rate-limit.js';
 
 const server = new Server(
   {
@@ -168,9 +173,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
   const toolArgs = (args || {}) as Record<string, unknown>;
 
   // Determine dry run mode for audit logging
-  const isDryRunForAudit = toolArgs.dry_run !== undefined
-    ? Boolean(toolArgs.dry_run)
-    : config.dryRun;
+  const isDryRunForAudit =
+    toolArgs.dry_run !== undefined ? Boolean(toolArgs.dry_run) : config.dryRun;
 
   // Create audit context for this tool invocation
   const audit = createAuditContext(name, toolArgs, isDryRunForAudit);

@@ -61,7 +61,9 @@ function sanitizeParams(params: Record<string, unknown>): Record<string, unknown
 /**
  * Log an audit entry to stderr as JSON
  */
-export function auditLog(entry: Omit<AuditEntry, 'timestamp' | 'params'> & { params: Record<string, unknown> }): void {
+export function auditLog(
+  entry: Omit<AuditEntry, 'timestamp' | 'params'> & { params: Record<string, unknown> }
+): void {
   const auditEntry: AuditEntry = {
     timestamp: new Date().toISOString(),
     tool: entry.tool,

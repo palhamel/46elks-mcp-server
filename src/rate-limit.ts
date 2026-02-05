@@ -117,7 +117,7 @@ export function checkRateLimit(toolName: string): void {
 
     throw new RateLimitError(
       `Rate limit exceeded for ${limitType}. ` +
-      `Please wait ${retryAfterSec} seconds before trying again.`,
+        `Please wait ${retryAfterSec} seconds before trying again.`,
       retryAfterSec
     );
   }
