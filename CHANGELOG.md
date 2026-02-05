@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `src/rate-limit.ts` - Rate limiting module with configurable limits
 - Tests for audit logging and rate limiting
 - Environment variables `RATE_LIMIT_SMS_PER_MINUTE` and `RATE_LIMIT_QUERIES_PER_MINUTE`
+- Husky pre-commit hook to run lint and tests before commits
 - ESLint for code linting with TypeScript support
 - Prettier for code formatting
 - EditorConfig for consistent coding styles

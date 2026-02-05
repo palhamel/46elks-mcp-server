@@ -22,7 +22,8 @@
     "test:coverage": "vitest run --coverage",
     "clean": "rm -rf dist coverage",
     "prepublishOnly": "npm run clean && npm run build",
-    "pretest": "npm run type-check"
+    "pretest": "npm run type-check",
+    "prepare": "husky"
   },
   "keywords": [
     "mcp",
@@ -58,6 +59,7 @@
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "husky": "^9.1.7",
     "prettier": "^3.8.1",
     "vitest": "^4.0.18"
   }
