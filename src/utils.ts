@@ -5,24 +5,26 @@ import { SendSmsResponse, ElksMessage, AccountInfo } from './elks-client.js';
  */
 export const formatSmsResponse = (response: SendSmsResponse, isDryRun: boolean): string => {
   const mode = isDryRun ? '🧪 DRY RUN' : '📱 SENT';
-  const cost = response.estimated_cost ? 
-    `Estimated cost: ${response.estimated_cost / 10000} SEK` : 
-    response.cost ? `Cost: ${response.cost / 10000} SEK` : 'Cost: N/A';
+  const cost = response.estimated_cost
+    ? `Estimated cost: ${response.estimated_cost / 10000} SEK`
+    : response.cost
+      ? `Cost: ${response.cost / 10000} SEK`
+      : 'Cost: N/A';
 
   let output = `${mode} SMS Status: ${response.status}\n`;
   output += `To: ${response.to}\n`;
   output += `From: ${response.from}\n`;
   output += `Message: ${response.message}\n`;
   output += `${cost}\n`;
-  
+
   if (response.parts) {
     output += `Message parts: ${response.parts}\n`;
   }
-  
+
   if (response.id) {
     output += `Message ID: ${response.id}\n`;
   }
-  
+
   if (isDryRun) {
     output += '\n⚠️  This was a test - no actual SMS was sent';
   }
@@ -44,7 +46,7 @@ export const formatSmsHistory = (messages: ElksMessage[], limit: number): string
     const direction = msg.direction === 'outbound' ? '📤 Sent' : '📥 Received';
     const cost = msg.cost ? ` (${msg.cost / 10000} SEK)` : '';
     const date = new Date(msg.created).toLocaleString();
-    
+
     output += `${index + 1}. ${direction}${cost}\n`;
     output += `   To: ${msg.to}\n`;
     output += `   From: ${msg.from}\n`;
@@ -66,7 +68,7 @@ export const formatSmsHistory = (messages: ElksMessage[], limit: number): string
 export const formatAccountBalance = (accountInfo: AccountInfo): string => {
   const balanceInCurrency = accountInfo.balance / 10000;
   const formattedBalance = `${balanceInCurrency.toFixed(2)} ${accountInfo.currency}`;
-  
+
   let output = `💰 Account Balance Information\n\n`;
   output += `Balance: ${formattedBalance}\n`;
   output += `Account: ${accountInfo.displayname}\n`;
@@ -74,7 +76,7 @@ export const formatAccountBalance = (accountInfo: AccountInfo): string => {
   output += `Email: ${accountInfo.email}\n`;
   output += `Currency: ${accountInfo.currency}\n`;
   output += `Account ID: ${accountInfo.id}\n\n`;
-  
+
   // Add balance status indication
   if (balanceInCurrency < 10) {
     output += `⚠️  Low balance warning: Consider adding funds to your account\n`;
@@ -82,7 +84,7 @@ export const formatAccountBalance = (accountInfo: AccountInfo): string => {
   } else {
     output += `✅ Balance sufficient for SMS sending`;
   }
-  
+
   return output;
 };
 
@@ -96,21 +98,23 @@ export const formatDeliveryStatistics = (messages: ElksMessage[]): string => {
 
   // Filter only outbound messages (we can't analyze delivery for inbound)
   const outboundMessages = messages.filter(msg => msg.direction === 'outbound');
-  
+
   if (outboundMessages.length === 0) {
     return '📊 No outbound messages found to analyze delivery statistics';
   }
 
   // Count messages by status
-  const statusCounts = outboundMessages.reduce((counts, msg) => {
-    counts[msg.status] = (counts[msg.status] || 0) + 1;
-    return counts;
-  }, {} as Record<string, number>);
+  const statusCounts = outboundMessages.reduce(
+    (counts, msg) => {
+      counts[msg.status] = (counts[msg.status] || 0) + 1;
+      return counts;
+    },
+    {} as Record<string, number>
+  );
 
   // Calculate costs
-  const totalCost = outboundMessages
-    .filter(msg => msg.cost)
-    .reduce((sum, msg) => sum + (msg.cost || 0), 0) / 10000;
+  const totalCost =
+    outboundMessages.filter(msg => msg.cost).reduce((sum, msg) => sum + (msg.cost || 0), 0) / 10000;
 
   const averageCost = totalCost / Math.max(outboundMessages.filter(msg => msg.cost).length, 1);
 
@@ -154,10 +158,15 @@ export const formatDeliveryStatistics = (messages: ElksMessage[]): string => {
  */
 function getStatusEmoji(status: string): string {
   switch (status) {
-    case 'delivered': return '✅';
-    case 'sent': return '📤';
-    case 'failed': return '❌';
-    case 'created': return '🕐';
-    default: return '❓';
+    case 'delivered':
+      return '✅';
+    case 'sent':
+      return '📤';
+    case 'failed':
+      return '❌';
+    case 'created':
+      return '🕐';
+    default:
+      return '❓';
   }
 }

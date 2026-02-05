@@ -11,17 +11,12 @@ export const validatePhoneNumber = (phoneNumber: string): { isValid: boolean; er
   }
 
   // Block placeholder/test numbers that AI assistants commonly use
-  const blockedNumbers = [
-    '+46701234567',
-    '+46700000000', 
-    '+1234567890',
-    '+46000000000'
-  ];
-  
+  const blockedNumbers = ['+46701234567', '+46700000000', '+1234567890', '+46000000000'];
+
   if (blockedNumbers.includes(cleanNumber)) {
-    return { 
-      isValid: false, 
-      error: 'Please provide a real phone number - test/placeholder numbers are not allowed' 
+    return {
+      isValid: false,
+      error: 'Please provide a real phone number - test/placeholder numbers are not allowed',
     };
   }
 
@@ -45,9 +40,9 @@ export const validatePhoneNumber = (phoneNumber: string): { isValid: boolean; er
   if (cleanNumber.startsWith('+46')) {
     const swedishNumber = cleanNumber.slice(3); // Remove +46
     if (swedishNumber.length !== 9 && swedishNumber.length !== 8) {
-      return { 
-        isValid: false, 
-        error: 'Swedish phone numbers should be 8-9 digits after +46' 
+      return {
+        isValid: false,
+        error: 'Swedish phone numbers should be 8-9 digits after +46',
       };
     }
   }
@@ -58,7 +53,9 @@ export const validatePhoneNumber = (phoneNumber: string): { isValid: boolean; er
 /**
  * SMS message content validation with proper encoding considerations
  */
-export const validateSmsMessage = (message: string): { isValid: boolean; error?: string; info?: string; warning?: string } => {
+export const validateSmsMessage = (
+  message: string
+): { isValid: boolean; error?: string; info?: string; warning?: string } => {
   if (!message || message.trim().length === 0) {
     return { isValid: false, error: 'Message content is required' };
   }
@@ -68,11 +65,11 @@ export const validateSmsMessage = (message: string): { isValid: boolean; error?:
   // Check if message contains non-GSM characters (emojis, special unicode)
   const gsmChars = /^[A-Za-z0-9\s@£$¥èéùìòÇØøÅåÉæÆß\^{}\[~\]|€\n\r\f\\]*$/;
   const isGsmEncoding = gsmChars.test(trimmedMessage);
-  
+
   let maxSingleLength: number;
   let maxMultipartLength: number;
   let segmentLength: number;
-  
+
   if (isGsmEncoding) {
     // GSM 03.38 encoding (standard SMS)
     maxSingleLength = 160;
@@ -87,9 +84,9 @@ export const validateSmsMessage = (message: string): { isValid: boolean; error?:
 
   // Check reasonable maximum length (prevent accidental bulk/long messages)
   if (trimmedMessage.length > maxMultipartLength) {
-    return { 
-      isValid: false, 
-      error: `Message too long (max ${maxMultipartLength} chars). This appears to be bulk content - use dedicated bulk SMS services instead.` 
+    return {
+      isValid: false,
+      error: `Message too long (max ${maxMultipartLength} chars). This appears to be bulk content - use dedicated bulk SMS services instead.`,
     };
   }
 
@@ -97,14 +94,14 @@ export const validateSmsMessage = (message: string): { isValid: boolean; error?:
   let segments: number;
   let info = '';
   let warning = '';
-  
+
   if (trimmedMessage.length <= maxSingleLength) {
     segments = 1;
     info = `1 SMS segment (${isGsmEncoding ? 'GSM' : 'Unicode'} encoding)`;
   } else {
     segments = Math.ceil(trimmedMessage.length / segmentLength);
     info = `${segments} SMS segments (${isGsmEncoding ? 'GSM' : 'Unicode'} encoding)`;
-    
+
     // Add warnings for expensive multi-part messages
     if (segments >= 3) {
       warning = `⚠️ Multi-part SMS will cost ${segments}x normal price`;
@@ -114,17 +111,28 @@ export const validateSmsMessage = (message: string): { isValid: boolean; error?:
     }
   }
 
-  return { 
-    isValid: true, 
+  return {
+    isValid: true,
     info,
-    warning: warning || undefined
+    warning: warning || undefined,
   };
 };
 
 /**
  * Sender ID validation (from field) with responsible usage checks
+ *
+ * Validates the sender ID used in SMS messages. Sender IDs can be:
+ * - Phone numbers: Must be valid international format (with +)
+ * - Alphanumeric: Max 11 chars, must start with letter, letters/numbers only
+ *
+ * Blocks common impersonation attempts (BANK, POLICE, etc.) to prevent misuse.
+ *
+ * @param senderId - The sender ID to validate (phone number or alphanumeric name)
+ * @returns Validation result with warnings for phone number usage
  */
-export const validateSenderId = (senderId: string): { isValid: boolean; error?: string; warning?: string } => {
+export const validateSenderId = (
+  senderId: string
+): { isValid: boolean; error?: string; warning?: string } => {
   if (!senderId) {
     return { isValid: true }; // Sender ID is optional
   }
@@ -138,46 +146,58 @@ export const validateSenderId = (senderId: string): { isValid: boolean; error?: 
       return phoneValidation;
     }
     // Add warning about using unverified phone numbers
-    return { 
-      isValid: true, 
-      warning: 'Using phone numbers as sender - ensure you can receive replies and have permission to use this number' 
+    return {
+      isValid: true,
+      warning:
+        'Using phone numbers as sender - ensure you can receive replies and have permission to use this number',
     };
   }
 
   // Check if it's an alphanumeric sender ID
   if (trimmed.length > 11) {
-    return { 
-      isValid: false, 
-      error: 'Alphanumeric sender ID must be 11 characters or less' 
+    return {
+      isValid: false,
+      error: 'Alphanumeric sender ID must be 11 characters or less',
     };
   }
 
   // Check if sender ID starts with a letter (46elks requirement)
   if (!/^[a-zA-Z]/.test(trimmed)) {
-    return { 
-      isValid: false, 
-      error: 'Alphanumeric sender ID must start with a letter (46elks requirement)' 
+    return {
+      isValid: false,
+      error: 'Alphanumeric sender ID must start with a letter (46elks requirement)',
     };
   }
 
   // Check for valid characters in alphanumeric sender ID
   if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
-    return { 
-      isValid: false, 
-      error: 'Sender ID can only contain letters and numbers (no spaces)' 
+    return {
+      isValid: false,
+      error: 'Sender ID can only contain letters and numbers (no spaces)',
     };
   }
 
   // Check for potentially problematic sender IDs
   const suspiciousSenders = [
-    'BANK', 'POLICE', 'GOVERNMENT', 'OFFICIAL', 'URGENT', 'WINNER', 'PRIZE',
-    'SECURITY', 'VERIFY', 'CONFIRM', 'ALERT', 'WARNING'
+    'BANK',
+    'POLICE',
+    'GOVERNMENT',
+    'OFFICIAL',
+    'URGENT',
+    'WINNER',
+    'PRIZE',
+    'SECURITY',
+    'VERIFY',
+    'CONFIRM',
+    'ALERT',
+    'WARNING',
   ];
-  
+
   if (suspiciousSenders.some(suspicious => trimmed.toUpperCase().includes(suspicious))) {
     return {
       isValid: false,
-      error: 'Sender ID appears to impersonate official entities - use your own business/service name'
+      error:
+        'Sender ID appears to impersonate official entities - use your own business/service name',
     };
   }
 
@@ -208,11 +228,11 @@ export const validateMessageLimit = (limit: number): { isValid: boolean; error?:
  */
 export const validateDirection = (direction: string): { isValid: boolean; error?: string } => {
   const validDirections = ['inbound', 'outbound', 'both'];
-  
+
   if (!validDirections.includes(direction)) {
-    return { 
-      isValid: false, 
-      error: `Direction must be one of: ${validDirections.join(', ')}` 
+    return {
+      isValid: false,
+      error: `Direction must be one of: ${validDirections.join(', ')}`,
     };
   }
 

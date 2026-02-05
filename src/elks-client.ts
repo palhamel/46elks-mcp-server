@@ -32,13 +32,29 @@ export interface AccountInfo {
   balance: number;
 }
 
+interface ElksApiMessage {
+  id: string;
+  to: string;
+  from: string;
+  message: string;
+  created: string;
+  direction: 'incoming' | 'outgoing';
+  status: 'created' | 'sent' | 'delivered' | 'failed';
+  cost?: number;
+}
+
 export class ElksClient {
   private readonly baseUrl = 'https://api.46elks.com/a1';
   private readonly auth: string;
   private readonly phoneNumber: string;
   private readonly dryRun: boolean;
 
-  constructor(userConfig?: { elksUsername: string; elksPassword: string; elksPhoneNumber: string; dryRun: boolean }) {
+  constructor(userConfig?: {
+    elksUsername: string;
+    elksPassword: string;
+    elksPhoneNumber: string;
+    dryRun: boolean;
+  }) {
     if (userConfig) {
       // Use provided user configuration
       const credentials = `${userConfig.elksUsername}:${userConfig.elksPassword}`;
@@ -62,20 +78,24 @@ export class ElksClient {
       const response = await fetch(`${this.baseUrl}/Me`, {
         method: 'GET',
         headers: {
-          'Authorization': this.auth,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+          Authorization: this.auth,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`46elks API error: ${response.status} ${response.statusText} - ${errorText}`);
+        throw new Error(
+          `46elks API error: ${response.status} ${response.statusText} - ${errorText}`
+        );
       }
 
       return true;
     } catch (error) {
       console.error('Failed to connect to 46elks:', error);
-      throw new Error(`46elks connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `46elks connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -87,31 +107,41 @@ export class ElksClient {
       const response = await fetch(`${this.baseUrl}/Me`, {
         method: 'GET',
         headers: {
-          'Authorization': this.auth,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+          Authorization: this.auth,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to get account info: ${response.status} ${response.statusText} - ${errorText}`);
+        throw new Error(
+          `Failed to get account info: ${response.status} ${response.statusText} - ${errorText}`
+        );
       }
 
       return await response.json();
     } catch (error) {
       console.error('Failed to get account info:', error);
-      throw new Error(`46elks account info failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `46elks account info failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   /**
    * Send SMS via 46elks API
    */
-  async sendSms(to: string, message: string, from?: string, dryRun?: boolean, flashsms?: string): Promise<SendSmsResponse> {
+  async sendSms(
+    to: string,
+    message: string,
+    from?: string,
+    dryRun?: boolean,
+    flashsms?: string
+  ): Promise<SendSmsResponse> {
     const formData = new URLSearchParams({
       to,
       message,
-      from: from || this.phoneNumber
+      from: from || this.phoneNumber,
     });
 
     // Add dry run parameter if enabled
@@ -128,15 +158,17 @@ export class ElksClient {
     const response = await fetch(`${this.baseUrl}/sms`, {
       method: 'POST',
       headers: {
-        'Authorization': this.auth,
-        'Content-Type': 'application/x-www-form-urlencoded'
+        Authorization: this.auth,
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: formData
+      body: formData,
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Failed to send SMS: ${response.status} ${response.statusText} - ${errorText}`);
+      throw new Error(
+        `Failed to send SMS: ${response.status} ${response.statusText} - ${errorText}`
+      );
     }
 
     return await response.json();
@@ -147,7 +179,7 @@ export class ElksClient {
    */
   async getMessages(limit = 10, direction?: 'inbound' | 'outbound'): Promise<ElksMessage[]> {
     const params = new URLSearchParams({
-      limit: limit.toString()
+      limit: limit.toString(),
     });
 
     // Convert our direction terms to 46elks API terms
@@ -159,24 +191,26 @@ export class ElksClient {
     const response = await fetch(`${this.baseUrl}/sms?${params}`, {
       method: 'GET',
       headers: {
-        'Authorization': this.auth,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
+        Authorization: this.auth,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Failed to get messages: ${response.status} ${response.statusText} - ${errorText}`);
+      throw new Error(
+        `Failed to get messages: ${response.status} ${response.statusText} - ${errorText}`
+      );
     }
 
     const data = await response.json();
-    
+
     // Convert API response direction terms to our interface
-    const messages = (data.data || []).map((msg: any) => ({
+    const messages = (data.data || []).map((msg: ElksApiMessage) => ({
       ...msg,
-      direction: msg.direction === 'outgoing' ? 'outbound' : 'inbound'
-    }));
-    
+      direction: msg.direction === 'outgoing' ? 'outbound' : 'inbound',
+    })) as ElksMessage[];
+
     return messages;
   }
 
@@ -187,22 +221,24 @@ export class ElksClient {
     const response = await fetch(`${this.baseUrl}/sms/${messageId}`, {
       method: 'GET',
       headers: {
-        'Authorization': this.auth,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
+        Authorization: this.auth,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Failed to get message: ${response.status} ${response.statusText} - ${errorText}`);
+      throw new Error(
+        `Failed to get message: ${response.status} ${response.statusText} - ${errorText}`
+      );
     }
 
     const message = await response.json();
-    
+
     // Convert API response direction terms to our interface
     return {
       ...message,
-      direction: message.direction === 'outgoing' ? 'outbound' : 'inbound'
+      direction: message.direction === 'outgoing' ? 'outbound' : 'inbound',
     };
   }
 }

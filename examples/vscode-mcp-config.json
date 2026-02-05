@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "46elks": {
+      "command": "node",
+      "args": ["/absolute/path/to/46elks-mcp-server/dist/index.js"],
+      "env": {
+        "ELKS_API_USERNAME": "your_46elks_api_username_here",
+        "ELKS_API_PASSWORD": "your_46elks_api_password_here",
+        "ELKS_PHONE_NUMBER": "+46XXXXXXXXX",
+        "DRY_RUN": "true"
+      }
+    }
+  }
+}
