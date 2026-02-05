@@ -68,7 +68,7 @@ Add this to your Claude Desktop configuration file:
 ```json
 {
   "mcpServers": {
-    "46elks": {
+    "sms-46elks": {
       "command": "node",
       "args": ["/path/to/46elks-mcp-server/dist/index.js"],
       "env": {
@@ -82,19 +82,21 @@ Add this to your Claude Desktop configuration file:
 }
 ```
 
+> **Note**: The config key `sms-46elks` must not start with a number. Starting with a number (e.g., `46elks`) can cause the MCP server to not be recognized by some clients.
+
 **Important**: Replace `/path/to/46elks-mcp-server` with the actual path where you cloned the repository.
 
 #### Option B: VS Code Copilot
 
 Add this to your VS Code MCP configuration file:
 
-**macOS**: `~/Library/Application Support/Code/User/mcp.json`  
+**macOS**: `~/Library/Application Support/Code/User/mcp.json`
 **Windows**: `%APPDATA%/Code/User/mcp.json`
 
 ```json
 {
   "mcpServers": {
-    "46elks": {
+    "sms-46elks": {
       "command": "node",
       "args": ["/path/to/46elks-mcp-server/dist/index.js"],
       "env": {

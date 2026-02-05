@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "46elks": {
+    "sms-46elks": {
       "command": "node",
       "args": ["/absolute/path/to/46elks-mcp-server/dist/index.js"],
       "env": {
