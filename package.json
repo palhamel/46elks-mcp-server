@@ -47,7 +47,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.4",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@types/node": "^20.19.11",
     "typescript": "^5.9.2"
   },
