@@ -51,6 +51,39 @@ export const validatePhoneNumber = (phoneNumber: string): { isValid: boolean; er
 };
 
 /**
+ * Strip control characters from message (MCP05, MCP06)
+ * Removes ASCII control characters except newlines/tabs which are valid in SMS
+ */
+function stripControlCharacters(text: string): string {
+  // Remove control chars (0x00-0x1F) except tab (0x09), newline (0x0A), carriage return (0x0D)
+  return text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+}
+
+/**
+ * Detect URLs/links in message content (MCP05, MCP06)
+ * Returns warning if URLs are found (potential phishing indicator)
+ */
+function detectUrls(text: string): string | undefined {
+  // Pattern to detect common URL formats
+  const urlPatterns = [
+    /https?:\/\/[^\s]+/i,           // http:// or https://
+    /www\.[^\s]+/i,                  // www.
+    /[a-zA-Z0-9-]+\.(com|org|net|se|io|co|uk|app|dev|info|biz)[^\s]*/i,  // Common TLDs
+    /bit\.ly\/[^\s]+/i,              // Common URL shorteners
+    /tinyurl\.com\/[^\s]+/i,
+    /t\.co\/[^\s]+/i,
+  ];
+
+  for (const pattern of urlPatterns) {
+    if (pattern.test(text)) {
+      return '⚠️ Message contains URL/link - ensure this is legitimate and not misleading';
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * SMS message content validation with proper encoding considerations
  */
 export const validateSmsMessage = (
@@ -60,7 +93,8 @@ export const validateSmsMessage = (
     return { isValid: false, error: 'Message content is required' };
   }
 
-  const trimmedMessage = message.trim();
+  // Strip control characters before validation
+  const trimmedMessage = stripControlCharacters(message.trim());
 
   // Check if message contains non-GSM characters (emojis, special unicode)
   const gsmChars = /^[A-Za-z0-9\s@£$¥èéùìòÇØøÅåÉæÆß\^{}\[~\]|€\n\r\f\\]*$/;
@@ -109,6 +143,12 @@ export const validateSmsMessage = (
     if (!isGsmEncoding && segments >= 2) {
       warning = `⚠️ Unicode SMS is more expensive and uses ${segments} segments`;
     }
+  }
+
+  // Check for URLs in message content (MCP05, MCP06 - potential phishing indicator)
+  const urlWarning = detectUrls(trimmedMessage);
+  if (urlWarning) {
+    warning = warning ? `${warning}\n${urlWarning}` : urlWarning;
   }
 
   return {
@@ -233,6 +273,43 @@ export const validateDirection = (direction: string): { isValid: boolean; error?
     return {
       isValid: false,
       error: `Direction must be one of: ${validDirections.join(', ')}`,
+    };
+  }
+
+  return { isValid: true };
+};
+
+/**
+ * Validate 46elks message ID format (MCP05, MCP06)
+ *
+ * 46elks message IDs are alphanumeric strings.
+ * This validation prevents injection attacks through malformed IDs.
+ */
+export const validateMessageId = (messageId: string): { isValid: boolean; error?: string } => {
+  if (!messageId || typeof messageId !== 'string') {
+    return { isValid: false, error: 'Message ID is required and must be a string' };
+  }
+
+  const trimmed = messageId.trim();
+
+  if (trimmed.length === 0) {
+    return { isValid: false, error: 'Message ID cannot be empty' };
+  }
+
+  // 46elks message IDs are alphanumeric (letters, numbers, potentially underscores/hyphens)
+  // Typical format: s0123456789abcdef
+  if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
+    return {
+      isValid: false,
+      error: 'Message ID contains invalid characters (must be alphanumeric)',
+    };
+  }
+
+  // Reasonable length check (46elks IDs are typically 16-32 chars)
+  if (trimmed.length > 64) {
+    return {
+      isValid: false,
+      error: 'Message ID is too long (max 64 characters)',
     };
   }
 

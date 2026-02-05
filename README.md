@@ -4,10 +4,11 @@
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)](https://nodejs.org/)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript&logoColor=white)
 [![CI](https://github.com/palhamel/46elks-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/palhamel/46elks-mcp-server/actions/workflows/ci.yml)
+[![OWASP MCP Top 10](https://img.shields.io/badge/OWASP_MCP-Top_10_Compliant-green.svg)](./SECURITY.md)
 
 MCP server for 46elks SMS API - Send SMS messages through Swedish telecommunications infrastructure.
 
-Enable Claude Desktop, VS Code Copilot, and other MCP-compatible tools to send SMS messages through Sweden's leading SMS provider with native 46elks integration and built-in anti-spoofing protection.
+Enable Claude Desktop, VS Code Copilot, and other MCP-compatible tools to send SMS messages through Sweden's leading SMS provider. Built with security-first design following [OWASP MCP Top 10](https://owasp.org/www-project-mcp-security/) guidelines, including rate limiting, audit logging, and input sanitization.
 
 > ⚠️ **Disclaimer**: This is an unofficial community project and is not affiliated with or endorsed by 46elks AB.
 
@@ -411,11 +412,27 @@ All code is automatically tested and linted on push.
 
 ## Security
 
+This MCP server has been hardened following [OWASP MCP Security Top 10](https://owasp.org/www-project-mcp-security/) guidelines. See [SECURITY.md](./SECURITY.md) for full details.
+
 ### API & Credential Security
 - API credentials are passed through MCP client configuration (not stored in code)
+- **Credential validation on startup** - Server fails fast if credentials are invalid
 - Dry run mode prevents accidental SMS sending during development
 - Input validation prevents malicious phone numbers and messages
 - No sensitive data is logged or stored
+
+### OWASP MCP Compliance Features
+
+- **Rate Limiting**: Prevents abuse through rapid tool calls (10 SMS/min, 60 queries/min)
+- **Audit Logging**: Structured JSON logs for security monitoring (phone numbers masked)
+- **Input Sanitization**: Control character stripping, URL detection warnings
+- **Message ID Validation**: Prevents injection through malformed IDs
+
+Configure rate limits via environment variables:
+```bash
+RATE_LIMIT_SMS_PER_MINUTE=10      # Default: 10
+RATE_LIMIT_QUERIES_PER_MINUTE=60  # Default: 60
+```
 
 ### Enhanced Security Features
 

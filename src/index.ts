@@ -12,13 +12,15 @@ import {
 import { validateConfig, config } from './config.js';
 import { ElksClient } from './elks-client.js';
 import { formatErrorResponse, ConfigurationError, handleValidationError } from './errors.js';
-import { validatePhoneNumber, validateSmsMessage, validateSenderId } from './validation.js';
+import { validatePhoneNumber, validateSmsMessage, validateSenderId, validateMessageId } from './validation.js';
 import {
   formatSmsResponse,
   formatSmsHistory,
   formatAccountBalance,
   formatDeliveryStatistics,
 } from './utils.js';
+import { createAuditContext } from './audit.js';
+import { checkRateLimit, RateLimitError } from './rate-limit.js';
 
 const server = new Server(
   {
@@ -162,12 +164,24 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 // Handle tool calls
 server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
+  const { name, arguments: args } = request.params;
+  const toolArgs = (args || {}) as Record<string, unknown>;
+
+  // Determine dry run mode for audit logging
+  const isDryRunForAudit = toolArgs.dry_run !== undefined
+    ? Boolean(toolArgs.dry_run)
+    : config.dryRun;
+
+  // Create audit context for this tool invocation
+  const audit = createAuditContext(name, toolArgs, isDryRunForAudit);
+
   try {
-    const { name, arguments: args } = request.params;
+    // Check rate limits before processing (MCP05, MCP07)
+    checkRateLimit(name);
 
     switch (name) {
-      case 'send_sms':
-        const { to, message, from, flashsms, dry_run } = args as {
+      case 'send_sms': {
+        const { to, message, from, flashsms, dry_run } = toolArgs as {
           to: string;
           message: string;
           from?: string;
@@ -197,6 +211,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
           responseText += `\n\n${messageValidation.warning}`;
         }
 
+        audit.success();
         return {
           content: [
             {
@@ -205,9 +220,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
             },
           ],
         };
+      }
 
-      case 'get_sms_messages':
-        const { limit = 10, direction } = args as {
+      case 'get_sms_messages': {
+        const { limit = 10, direction } = toolArgs as {
           limit?: number;
           direction?: 'inbound' | 'outbound' | 'both';
         };
@@ -222,6 +238,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
           direction === 'both' ? undefined : direction
         );
 
+        audit.success();
         return {
           content: [
             {
@@ -230,18 +247,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
             },
           ],
         };
+      }
 
-      case 'check_sms_status':
-        const { message_id } = args as {
+      case 'check_sms_status': {
+        const { message_id } = toolArgs as {
           message_id: string;
         };
 
-        if (!message_id || typeof message_id !== 'string') {
-          throw new McpError(
-            ErrorCode.InvalidParams,
-            'message_id is required and must be a string'
-          );
-        }
+        // Validate message ID format (MCP05, MCP06)
+        handleValidationError('message ID', validateMessageId(message_id));
 
         // Get message status via 46elks
         const elksClientForStatus = new ElksClient();
@@ -262,6 +276,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
         statusText += `Cost: ${cost}\n`;
         statusText += `Message: ${messageDetails.message}`;
 
+        audit.success();
         return {
           content: [
             {
@@ -270,12 +285,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
             },
           ],
         };
+      }
 
-      case 'check_account_balance':
+      case 'check_account_balance': {
         // Get account information via 46elks
         const elksClientForAccount = new ElksClient();
         const accountInfo = await elksClientForAccount.getAccountInfo();
 
+        audit.success();
         return {
           content: [
             {
@@ -284,13 +301,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
             },
           ],
         };
+      }
 
-      case 'estimate_sms_cost':
+      case 'estimate_sms_cost': {
         const {
           to: estimateTo,
           message: estimateMessage,
           from: estimateFrom,
-        } = args as {
+        } = toolArgs as {
           to: string;
           message: string;
           from?: string;
@@ -341,6 +359,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
 
         costEstimateText += `🧪 This was an estimate only - no SMS was sent`;
 
+        audit.success();
         return {
           content: [
             {
@@ -349,9 +368,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
             },
           ],
         };
+      }
 
-      case 'get_delivery_statistics':
-        const { limit: statsLimit = 50 } = args as {
+      case 'get_delivery_statistics': {
+        const { limit: statsLimit = 50 } = toolArgs as {
           limit?: number;
         };
 
@@ -362,6 +382,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
         const elksClientForStats = new ElksClient();
         const messagesForStats = await elksClientForStats.getMessages(analysisLimit);
 
+        audit.success();
         return {
           content: [
             {
@@ -370,11 +391,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest)
             },
           ],
         };
+      }
 
       default:
         throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
     }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    audit.failure(errorMessage);
     return {
       content: [formatErrorResponse(error)],
     };
@@ -395,15 +419,20 @@ async function main() {
       console.error('📱 Production mode - SMS messages WILL be sent');
     }
 
-    // Test 46elks connection (non-blocking)
+    // Verify 46elks credentials on startup (blocking - MCP01, MCP07)
+    // This prevents the server from starting with invalid credentials
     const elksClient = new ElksClient();
     try {
       await elksClient.testConnection();
-      console.error('✓ 46elks connection successful');
-    } catch {
-      console.error('⚠️  46elks connection test failed - server will start anyway');
-      console.error('   This is normal if using test credentials or during development');
-      console.error('   Real API calls will be validated when tools are used');
+      console.error('✓ 46elks credentials verified');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('✗ 46elks credential verification failed:', errorMessage);
+      console.error('\nPlease verify your 46elks API credentials:');
+      console.error('  - ELKS_API_USERNAME: Your 46elks API username');
+      console.error('  - ELKS_API_PASSWORD: Your 46elks API password');
+      console.error('  - Get credentials at: https://46elks.com/');
+      throw new ConfigurationError(`46elks credential verification failed: ${errorMessage}`);
     }
 
     // Start MCP server

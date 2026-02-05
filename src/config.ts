@@ -1,3 +1,18 @@
+/**
+ * Configuration for the 46elks MCP Server
+ *
+ * Required environment variables:
+ * - ELKS_API_USERNAME: Your 46elks API username
+ * - ELKS_API_PASSWORD: Your 46elks API password
+ * - ELKS_PHONE_NUMBER: Your 46elks phone number (with country code, e.g., +46...)
+ *
+ * Optional environment variables:
+ * - DRY_RUN: Set to "true" to enable dry run mode (no real SMS sent)
+ * - RATE_LIMIT_SMS_PER_MINUTE: Max SMS sends per minute (default: 10)
+ * - RATE_LIMIT_QUERIES_PER_MINUTE: Max query tool calls per minute (default: 60)
+ * - PORT: Server port (legacy, not used in MCP stdio mode)
+ * - WEBHOOK_URL: Webhook URL (legacy, not used in local-only mode)
+ */
 interface Config {
   elksUsername: string;
   elksPassword: string;

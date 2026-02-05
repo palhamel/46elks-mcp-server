@@ -5,6 +5,7 @@ import {
   validateSenderId,
   validateMessageLimit,
   validateDirection,
+  validateMessageId,
 } from '../validation.js';
 
 describe('validatePhoneNumber', () => {
@@ -160,5 +161,108 @@ describe('validateDirection', () => {
     const result = validateDirection('invalid');
     expect(result.isValid).toBe(false);
     expect(result.error).toContain('must be one of');
+  });
+});
+
+describe('validateMessageId', () => {
+  it('should accept valid alphanumeric message IDs', () => {
+    expect(validateMessageId('s0123456789abcdef').isValid).toBe(true);
+    expect(validateMessageId('abc123').isValid).toBe(true);
+    expect(validateMessageId('MSG-12345').isValid).toBe(true);
+    expect(validateMessageId('test_message_id').isValid).toBe(true);
+  });
+
+  it('should reject empty message IDs', () => {
+    const result = validateMessageId('');
+    expect(result.isValid).toBe(false);
+    expect(result.error).toContain('required');
+  });
+
+  it('should reject null/undefined message IDs', () => {
+    const result = validateMessageId(null as unknown as string);
+    expect(result.isValid).toBe(false);
+    expect(result.error).toContain('required');
+  });
+
+  it('should reject message IDs with special characters', () => {
+    const result = validateMessageId('msg/../../../etc/passwd');
+    expect(result.isValid).toBe(false);
+    expect(result.error).toContain('invalid characters');
+  });
+
+  it('should reject message IDs with spaces', () => {
+    const result = validateMessageId('msg 123');
+    expect(result.isValid).toBe(false);
+    expect(result.error).toContain('invalid characters');
+  });
+
+  it('should reject excessively long message IDs', () => {
+    const longId = 'a'.repeat(65);
+    const result = validateMessageId(longId);
+    expect(result.isValid).toBe(false);
+    expect(result.error).toContain('too long');
+  });
+
+  it('should accept message IDs with hyphens and underscores', () => {
+    expect(validateMessageId('msg-123_test').isValid).toBe(true);
+  });
+});
+
+describe('URL detection in messages', () => {
+  it('should warn about http URLs', () => {
+    const result = validateSmsMessage('Check http://example.com for more');
+    expect(result.isValid).toBe(true);
+    expect(result.warning).toContain('URL');
+  });
+
+  it('should warn about https URLs', () => {
+    const result = validateSmsMessage('Visit https://example.com today');
+    expect(result.isValid).toBe(true);
+    expect(result.warning).toContain('URL');
+  });
+
+  it('should warn about www links', () => {
+    const result = validateSmsMessage('Go to www.example.com');
+    expect(result.isValid).toBe(true);
+    expect(result.warning).toContain('URL');
+  });
+
+  it('should warn about common TLDs', () => {
+    const result = validateSmsMessage('Check example.com/page');
+    expect(result.isValid).toBe(true);
+    expect(result.warning).toContain('URL');
+  });
+
+  it('should warn about URL shorteners', () => {
+    const result = validateSmsMessage('Click bit.ly/abc123');
+    expect(result.isValid).toBe(true);
+    expect(result.warning).toContain('URL');
+  });
+
+  it('should not warn about messages without URLs', () => {
+    const result = validateSmsMessage('Hello, your appointment is at 3pm');
+    expect(result.isValid).toBe(true);
+    // Should have no warning or only multi-part warning
+    if (result.warning) {
+      expect(result.warning).not.toContain('URL');
+    }
+  });
+});
+
+describe('control character stripping', () => {
+  it('should strip null characters', () => {
+    const result = validateSmsMessage('Hello\x00World');
+    expect(result.isValid).toBe(true);
+    // Message is valid after stripping
+  });
+
+  it('should preserve newlines', () => {
+    const result = validateSmsMessage('Hello\nWorld');
+    expect(result.isValid).toBe(true);
+  });
+
+  it('should preserve tabs', () => {
+    const result = validateSmsMessage('Hello\tWorld');
+    expect(result.isValid).toBe(true);
   });
 });

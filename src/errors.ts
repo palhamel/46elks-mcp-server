@@ -48,6 +48,10 @@ export const formatErrorResponse = (error: unknown): { type: 'text'; text: strin
     errorCode = error.code;
   } else if (error instanceof Error) {
     errorMessage = error.message;
+    // Handle RateLimitError specially
+    if (error.name === 'RateLimitError') {
+      errorCode = 'RATE_LIMIT_EXCEEDED';
+    }
   } else {
     errorMessage = 'An unknown error occurred';
   }
