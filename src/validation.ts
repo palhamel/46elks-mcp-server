@@ -65,13 +65,14 @@ function stripControlCharacters(text: string): string {
  */
 function detectUrls(text: string): string | undefined {
   // Pattern to detect common URL formats
+  // Using word boundaries (\b) to avoid partial matches
   const urlPatterns = [
-    /https?:\/\/[^\s]+/i, // http:// or https://
-    /www\.[^\s]+/i, // www.
-    /[a-zA-Z0-9-]+\.(com|org|net|se|io|co|uk|app|dev|info|biz)[^\s]*/i, // Common TLDs
-    /bit\.ly\/[^\s]+/i, // Common URL shorteners
-    /tinyurl\.com\/[^\s]+/i,
-    /t\.co\/[^\s]+/i,
+    /\bhttps?:\/\/[^\s]+/i, // http:// or https://
+    /\bwww\.[^\s]+/i, // www.
+    /\b[a-zA-Z0-9-]+\.(com|org|net|se|io|co|uk|app|dev|info|biz)\b/i, // Common TLDs
+    /\bbit\.ly\/[^\s]+/i, // Common URL shorteners
+    /\btinyurl\.com\/[^\s]+/i,
+    /\bt\.co\/[^\s]+/i,
   ];
 
   for (const pattern of urlPatterns) {
