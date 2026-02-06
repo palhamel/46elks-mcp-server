@@ -30,7 +30,7 @@ import { checkRateLimit } from './rate-limit.js';
 const server = new Server(
   {
     name: '46elks-mcp',
-    version: '0.1.0',
+    version: '0.3.0',
     description:
       '46elks MCP Server - Send and receive SMS through Swedish telecommunications infrastructure',
   },

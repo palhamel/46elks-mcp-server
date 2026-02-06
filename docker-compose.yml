@@ -1,0 +1,41 @@
+# 46elks MCP Server - Docker Compose for Local Testing
+# Usage: docker-compose up --build
+
+services:
+  46elks-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: 46elks-mcp-server
+    environment:
+      # Required credentials - set these in .env file or export them
+      - ELKS_API_USERNAME=${ELKS_API_USERNAME}
+      - ELKS_API_PASSWORD=${ELKS_API_PASSWORD}
+      - ELKS_PHONE_NUMBER=${ELKS_PHONE_NUMBER}
+      # Optional settings
+      - DRY_RUN=${DRY_RUN:-true}
+      - RATE_LIMIT_SMS_PER_MINUTE=${RATE_LIMIT_SMS_PER_MINUTE:-10}
+      - RATE_LIMIT_QUERIES_PER_MINUTE=${RATE_LIMIT_QUERIES_PER_MINUTE:-60}
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    # Security hardening
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+# To use with Claude Desktop, configure claude_desktop_config.json:
+# {
+#   "mcpServers": {
+#     "46elks-sms": {
+#       "command": "docker",
+#       "args": ["run", "-i", "--rm",
+#         "-e", "ELKS_API_USERNAME",
+#         "-e", "ELKS_API_PASSWORD",
+#         "-e", "ELKS_PHONE_NUMBER",
+#         "46elks-mcp-server"]
+#     }
+#   }
+# }

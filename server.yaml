@@ -1,0 +1,62 @@
+# 46elks MCP Server - Docker MCP Registry Configuration
+# For submission to https://github.com/docker/mcp-registry
+
+name: 46elks-sms
+type: server
+
+meta:
+  category: communication
+  tags:
+    - sms
+    - sweden
+    - 46elks
+    - telecommunications
+    - messaging
+    - swedish
+
+about:
+  title: 46elks SMS
+  description: |
+    Send and receive SMS messages through Swedish 46elks telecommunications infrastructure.
+    OWASP MCP Top 10 compliant with rate limiting, audit logging, and input validation.
+  icon: https://46elks.com/images/logo/46elks-logo-white-text.png
+
+source:
+  project: https://github.com/palhamel/46elks-mcp-server
+  commit: PLACEHOLDER_COMMIT_HASH  # Update this with actual commit hash before submission
+
+config:
+  description: |
+    Requires 46elks API credentials. Get your credentials at https://46elks.com/
+
+    1. Sign up for a 46elks account
+    2. Get your API username and password from the dashboard
+    3. Purchase a phone number for sending SMS
+
+  secrets:
+    - name: ELKS_API_USERNAME
+      description: Your 46elks API username (found in dashboard)
+      required: true
+    - name: ELKS_API_PASSWORD
+      description: Your 46elks API password (found in dashboard)
+      required: true
+    - name: ELKS_PHONE_NUMBER
+      description: Your 46elks phone number with country code (e.g., +46701234567)
+      required: true
+  env:
+    - name: DRY_RUN
+      description: Set to 'true' for testing without sending actual SMS (default: false)
+      required: false
+    - name: RATE_LIMIT_SMS_PER_MINUTE
+      description: Maximum SMS sends per minute (default: 10)
+      required: false
+    - name: RATE_LIMIT_QUERIES_PER_MINUTE
+      description: Maximum query operations per minute (default: 60)
+      required: false
+
+# Security features (OWASP MCP Top 10 compliant)
+# - Credential validation on startup
+# - Rate limiting (10 SMS/min, 60 queries/min)
+# - Structured audit logging with phone number masking
+# - Input sanitization (URL detection, control character stripping)
+# - Message ID validation to prevent injection

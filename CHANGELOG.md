@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-02-05
+
+### Added
+- Docker support with multi-stage Dockerfile for containerized deployment
+- `server.yaml` for Docker MCP Catalog submission
+- `tools.json` tool definitions for Docker MCP registry
+- `docker-compose.yml` for easy local Docker testing
+- Non-root user in Docker container for enhanced security
+- Health check in Docker container
+
+### Changed
+- Updated MCP server version to 0.3.0
+- Upgraded base image from node:20-alpine to node:22-alpine (LTS)
+- Prepared for Docker MCP Catalog distribution
+
+### Security
+- Removed npm/yarn from production image (eliminates all HIGH vulnerabilities)
+- Docker Scout scan: 0 Critical, 0 High vulnerabilities
+- Docker container runs as non-root user (mcpuser)
+- Container health checks for reliability monitoring
+- Read-only root filesystem in docker-compose
+- All Linux capabilities dropped (cap_drop: ALL)
+- No new privileges flag enabled (no-new-privileges:true)
+
 ## [0.2.0] - 2026-02-05
 
 ### Added

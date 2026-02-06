@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)](https://nodejs.org/)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker&logoColor=white)
 [![CI](https://github.com/palhamel/46elks-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/palhamel/46elks-mcp-server/actions/workflows/ci.yml)
 [![OWASP MCP Top 10](https://img.shields.io/badge/OWASP_MCP-Top_10_Compliant-green.svg)](./SECURITY.md)
 
@@ -327,6 +328,64 @@ Estimate the cost to send "Event reminder" to 30 customers, and plan the timing.
 ⏳ **Expected to work with:**
 - Cursor (not yet verified)
 - Other MCP-compatible tools
+
+## Docker Support
+
+Run the MCP server in a Docker container for isolated, secure deployment.
+
+### Build and Run with Docker
+
+```bash
+# Build the Docker image
+docker build -t 46elks-mcp-server .
+
+# Run with environment variables
+docker run -i --rm \
+  -e ELKS_API_USERNAME=your_username \
+  -e ELKS_API_PASSWORD=your_password \
+  -e ELKS_PHONE_NUMBER=+46701234567 \
+  -e DRY_RUN=true \
+  46elks-mcp-server
+```
+
+### Docker Compose
+
+For easier local testing:
+
+```bash
+# Copy .env.example to .env and fill in your credentials
+cp .env.example .env
+
+# Run with Docker Compose
+docker-compose up --build
+```
+
+### Claude Desktop with Docker
+
+Configure Claude Desktop to use the Docker container:
+
+```json
+{
+  "mcpServers": {
+    "46elks-sms": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm",
+        "-e", "ELKS_API_USERNAME=your_username",
+        "-e", "ELKS_API_PASSWORD=your_password",
+        "-e", "ELKS_PHONE_NUMBER=+46701234567",
+        "46elks-mcp-server"]
+    }
+  }
+}
+```
+
+### Docker MCP Catalog
+
+This server is being submitted to the [Docker MCP Catalog](https://docs.docker.com/ai/mcp-catalog-and-toolkit/catalog/) for trusted distribution with:
+- Container isolation
+- Cryptographic signatures
+- Software Bill of Materials (SBOM)
+- Automatic security updates
 
 ## Development
 

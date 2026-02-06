@@ -1,6 +1,6 @@
 {
   "name": "46elks-mcp-server",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Unofficial MCP server for 46elks SMS API - Send SMS messages through Swedish telecommunications infrastructure",
   "main": "dist/index.js",
   "private": true,
