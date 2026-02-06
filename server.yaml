@@ -23,7 +23,7 @@ about:
 
 source:
   project: https://github.com/palhamel/46elks-mcp-server
-  commit: PLACEHOLDER_COMMIT_HASH  # Update this with actual commit hash before submission
+  commit: b13d9cb8245bf6c728f740799b6dd130c5ffde0a
 
 config:
   description: |
