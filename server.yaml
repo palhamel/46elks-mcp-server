@@ -1,9 +1,6 @@
-# 46elks MCP Server - Docker MCP Registry Configuration
-# For submission to https://github.com/docker/mcp-registry
-
 name: 46elks-sms
+image: mcp/46elks-sms
 type: server
-
 meta:
   category: communication
   tags:
@@ -12,51 +9,43 @@ meta:
     - 46elks
     - telecommunications
     - messaging
-    - swedish
-
 about:
   title: 46elks SMS
-  description: |
-    Send and receive SMS messages through Swedish 46elks telecommunications infrastructure.
-    OWASP MCP Top 10 compliant with rate limiting, audit logging, and input validation.
+  description: Send SMS messages through Swedish 46elks telecommunications infrastructure. OWASP MCP Top 10 compliant with rate limiting, audit logging, and input validation.
   icon: https://46elks.com/images/logo/46elks-logo-white-text.png
-
 source:
   project: https://github.com/palhamel/46elks-mcp-server
+  branch: main
   commit: b13d9cb8245bf6c728f740799b6dd130c5ffde0a
-
 config:
   description: |
-    Requires 46elks API credentials. Get your credentials at https://46elks.com/
-
-    1. Sign up for a 46elks account
-    2. Get your API username and password from the dashboard
-    3. Purchase a phone number for sending SMS
-
+    Requires 46elks API credentials. Sign up at https://46elks.com/ to get your API username, password, and a phone number for sending SMS.
   secrets:
-    - name: ELKS_API_USERNAME
-      description: Your 46elks API username (found in dashboard)
-      required: true
-    - name: ELKS_API_PASSWORD
-      description: Your 46elks API password (found in dashboard)
-      required: true
-    - name: ELKS_PHONE_NUMBER
-      description: Your 46elks phone number with country code (e.g., +46701234567)
-      required: true
+    - name: 46elks-sms.api_username
+      env: ELKS_API_USERNAME
+      example: uXXXXXXXXXXXXXXXXXXXXXX
+    - name: 46elks-sms.api_password
+      env: ELKS_API_PASSWORD
+      example: XXXXXXXXXXXXXXXXXXXXXXXX
+    - name: 46elks-sms.phone_number
+      env: ELKS_PHONE_NUMBER
+      example: "+46701234567"
   env:
     - name: DRY_RUN
-      description: Set to 'true' for testing without sending actual SMS (default: false)
-      required: false
+      example: "false"
+      value: "{{46elks-sms.dry_run}}"
     - name: RATE_LIMIT_SMS_PER_MINUTE
-      description: Maximum SMS sends per minute (default: 10)
-      required: false
+      example: "10"
+      value: "{{46elks-sms.rate_limit_sms}}"
     - name: RATE_LIMIT_QUERIES_PER_MINUTE
-      description: Maximum query operations per minute (default: 60)
-      required: false
-
-# Security features (OWASP MCP Top 10 compliant)
-# - Credential validation on startup
-# - Rate limiting (10 SMS/min, 60 queries/min)
-# - Structured audit logging with phone number masking
-# - Input sanitization (URL detection, control character stripping)
-# - Message ID validation to prevent injection
+      example: "60"
+      value: "{{46elks-sms.rate_limit_queries}}"
+  parameters:
+    type: object
+    properties:
+      dry_run:
+        type: string
+      rate_limit_sms:
+        type: string
+      rate_limit_queries:
+        type: string
