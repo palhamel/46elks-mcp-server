@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-05-06
+
+### Security
+- Resolved all 14 npm audit vulnerabilities (0 vulnerabilities remain)
+- Added `overrides` in package.json to force patched versions of transitive
+  dependencies from `@modelcontextprotocol/sdk`:
+  `@hono/node-server` >=1.19.14, `hono` >=4.12.18, `express-rate-limit` >=8.5.1,
+  `path-to-regexp` >=8.4.2, `ajv` >=8.20.0, `ip-address` >=10.2.0
+- Fixed HIGH severity prototype pollution in `flatted` (<=3.4.1) via dev dep upgrade
+- Fixed HIGH severity regex vuln in `picomatch` (4.0.0-4.0.3) via dev dep upgrade
+- Fixed MODERATE severity regex vuln in `brace-expansion` via dev dep upgrade
+
+### Changed
+- Upgraded `@modelcontextprotocol/sdk` from 1.27.1 to 1.29.0
+- Upgraded `typescript` from 5.9.3 to 6.0.3 (major version — requires Node types
+  declared explicitly; added `"types": ["node"]` to tsconfig.json)
+- Upgraded `vitest` and `@vitest/ui` from 4.1.0 to 4.1.5
+- Upgraded `eslint` from 10.1.0 to 10.3.0
+- Upgraded `@typescript-eslint/eslint-plugin` and `@typescript-eslint/parser`
+  from 8.57.1 to 8.59.2
+- Upgraded `prettier` from 3.8.1 to 3.8.3
+- Upgraded `@types/node` from 25.5.0 to 25.6.0
+
+### Fixed
+- Added `"types": ["node"]` to `tsconfig.json` for TypeScript 6 compatibility
+  (TypeScript 6 no longer auto-includes Node.js ambient types)
+
 ## [0.3.0] - 2026-02-05
 
 ### Added
