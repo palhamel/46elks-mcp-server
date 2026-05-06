@@ -42,7 +42,7 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 ### Prerequisites
 
-- Node.js 20+ (LTS recommended)
+- Node.js 22+ (LTS recommended; Node.js 20 is End of Life)
 - npm (comes with Node.js)
 - Git
 

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-05-06
+
+### Changed
+- Drop Node.js 20 (EOL April 2026) from CI test matrix; add Node.js 24 LTS
+- CI lint and build jobs now run on Node.js 24 (was 20)
+- Test matrix updated to Node.js 22 and 24 (was 20 and 22)
+- Dockerfile base image upgraded from `node:22-alpine` to `node:24-alpine`
+- `engines` field in package.json updated to `>=22.0.0` (Node 20 EOL)
+- Updated README, CONTRIBUTING badges and prerequisites to reflect Node.js 22+/24+
+- Added `.node-version` file pinned to 24 for nvm/fnm/volta compatibility
+
 ## [0.3.1] - 2026-05-06
 
 ### Security
