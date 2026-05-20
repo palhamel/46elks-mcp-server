@@ -1,8 +1,8 @@
 # 46elks MCP Server
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)](https://nodejs.org/)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript&logoColor=white)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-green.svg)](https://nodejs.org/)
+![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?logo=typescript&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker&logoColor=white)
 [![CI](https://github.com/palhamel/46elks-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/palhamel/46elks-mcp-server/actions/workflows/ci.yml)
 [![OWASP MCP Top 10](https://img.shields.io/badge/OWASP_MCP-Top_10_Compliant-green.svg)](./SECURITY.md)
@@ -15,7 +15,7 @@ Enable Claude Desktop, VS Code Copilot, and other MCP-compatible tools to send S
 
 ## Getting Started
 
-**Prerequisites**: You'll need [Node.js 20+](https://nodejs.org/) (LTS recommended) and one of these MCP clients: Claude Desktop, VS Code with Copilot, or Cursor.
+**Prerequisites**: You'll need [Node.js 22+](https://nodejs.org/) (LTS recommended) and one of these MCP clients: Claude Desktop, VS Code with Copilot, or Cursor.
 
 ### Step 1: Get 46elks Credentials
 
@@ -544,7 +544,7 @@ This approach enhances 46elks' powerful API with additional guidance for optimal
 - **Testing**: Always test with `DRY_RUN=true` before any batch sending
 
 **Build errors**
-- Ensure Node.js 20+ LTS is installed (Node.js 18 is End of Life)
+- Ensure Node.js 22+ LTS is installed (Node.js 20 is End of Life as of April 2026)
 - Run `npm install` to install dependencies
 - Delete `node_modules` and `package-lock.json`, then `npm install`
 
