@@ -18,6 +18,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # Stay on the Node.js LTS line; major jumps (e.g. 24 -> 26) are a deliberate decision
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
     labels:
       - "dependencies"
       - "docker"
