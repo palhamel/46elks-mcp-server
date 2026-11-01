@@ -13,6 +13,18 @@ updates:
       prefix: "chore"
       include: "scope"
 
+  # Keep the Docker base image (pinned by digest) up to date
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"

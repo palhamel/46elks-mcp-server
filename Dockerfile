@@ -2,7 +2,7 @@
 # Multi-stage build for minimal image size
 
 # Build stage
-FROM node:24-alpine AS builder
+FROM node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 AS builder
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ RUN npm run build
 RUN rm -rf node_modules && npm ci --omit=dev --ignore-scripts
 
 # Production stage
-FROM node:24-alpine AS production
+FROM node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 AS production
 
 WORKDIR /app
 
@@ -51,9 +51,9 @@ USER mcpuser
 # Environment variables (to be provided at runtime)
 ENV NODE_ENV=production
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD node -e "console.log('healthy')" || exit 1
+# Health check: stdio server has no port, so verify the server process is alive
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD ["pgrep", "-f", "node dist/index.js"]
 
 # Run MCP server
 CMD ["node", "dist/index.js"]
