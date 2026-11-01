@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-01
+
 ### Security
 Review against OWASP MCP Top 10:2025 (see SECURITY.md for the corrected mapping).
 - **MCP02:** `DRY_RUN=true` is now a hard floor. A tool call with `dry_run: false` is ignored,
