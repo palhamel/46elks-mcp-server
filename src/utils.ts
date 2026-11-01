@@ -1,4 +1,5 @@
 import { SendSmsResponse, ElksMessage, AccountInfo } from './elks-client.js';
+import { presentPhoneNumber, sanitizeUntrustedText, UNTRUSTED_NOTICE } from './safety.js';
 
 /**
  * Format SMS response for MCP tool output
@@ -40,7 +41,8 @@ export const formatSmsHistory = (messages: ElksMessage[], limit: number): string
     return '📭 No SMS messages found';
   }
 
-  let output = `📱 SMS Message History (${messages.length} of ${limit} requested)\n\n`;
+  let output = `📱 SMS Message History (${messages.length} of ${limit} requested)\n`;
+  output += `${UNTRUSTED_NOTICE}\n\n`;
 
   messages.forEach((msg, index) => {
     const direction = msg.direction === 'outbound' ? '📤 Sent' : '📥 Received';
@@ -48,11 +50,11 @@ export const formatSmsHistory = (messages: ElksMessage[], limit: number): string
     const date = new Date(msg.created).toLocaleString();
 
     output += `${index + 1}. ${direction}${cost}\n`;
-    output += `   To: ${msg.to}\n`;
-    output += `   From: ${msg.from}\n`;
+    output += `   To: ${presentPhoneNumber(String(msg.to))}\n`;
+    output += `   From: ${presentPhoneNumber(String(msg.from))}\n`;
     output += `   Status: ${msg.status}\n`;
     output += `   Created: ${date}\n`;
-    output += `   Message: ${msg.message}\n`;
+    output += `   Message (untrusted): "${sanitizeUntrustedText(msg.message)}"\n`;
     if (msg.id) {
       output += `   ID: ${msg.id}\n`;
     }
@@ -72,10 +74,8 @@ export const formatAccountBalance = (accountInfo: AccountInfo): string => {
   let output = `💰 Account Balance Information\n\n`;
   output += `Balance: ${formattedBalance}\n`;
   output += `Account: ${accountInfo.displayname}\n`;
-  output += `Mobile: ${accountInfo.mobilenumber}\n`;
-  output += `Email: ${accountInfo.email}\n`;
-  output += `Currency: ${accountInfo.currency}\n`;
-  output += `Account ID: ${accountInfo.id}\n\n`;
+  output += `Currency: ${accountInfo.currency}\n\n`;
+  // Email, mobile number and account ID are deliberately not returned (OWASP MCP10)
 
   // Add balance status indication
   if (balanceInCurrency < 10) {

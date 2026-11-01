@@ -10,15 +10,15 @@
  * - DRY_RUN: Set to "true" to enable dry run mode (no real SMS sent)
  * - RATE_LIMIT_SMS_PER_MINUTE: Max SMS sends per minute (default: 10)
  * - RATE_LIMIT_QUERIES_PER_MINUTE: Max query tool calls per minute (default: 60)
- * - PORT: Server port (legacy, not used in MCP stdio mode)
- * - WEBHOOK_URL: Webhook URL (legacy, not used in local-only mode)
+ * - DAILY_SMS_LIMIT: Max real SMS sends per 24h (default: 50, 0 disables)
+ * - SHOW_FULL_PHONE_NUMBERS: Set to "true" to return unmasked numbers to the model
+ *
+ * DRY_RUN=true is enforced by the server: tool calls cannot switch it off.
  */
 interface Config {
   elksUsername: string;
   elksPassword: string;
   elksPhoneNumber: string;
-  webhookUrl?: string;
-  port: number;
   dryRun: boolean;
 }
 
@@ -26,8 +26,6 @@ export const config: Config = {
   elksUsername: process.env.ELKS_API_USERNAME || '',
   elksPassword: process.env.ELKS_API_PASSWORD || '',
   elksPhoneNumber: process.env.ELKS_PHONE_NUMBER || '',
-  webhookUrl: process.env.WEBHOOK_URL,
-  port: parseInt(process.env.PORT || '3001', 10),
   dryRun: process.env.DRY_RUN === 'true' || process.env.NODE_ENV === 'development',
 };
 
@@ -53,10 +51,5 @@ export const validateConfig = (): void => {
   // Validate phone number format
   if (!config.elksPhoneNumber.startsWith('+')) {
     throw new Error('ELKS_PHONE_NUMBER must include country code (e.g., +46XXXXXXXXX)');
-  }
-
-  // Validate port is a valid number
-  if (isNaN(config.port) || config.port < 1 || config.port > 65535) {
-    throw new Error('PORT must be a valid port number between 1 and 65535');
   }
 };

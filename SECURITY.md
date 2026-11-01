@@ -38,26 +38,59 @@ When reporting a vulnerability, please include:
 - **Resolution**: We aim to resolve critical vulnerabilities within 7 days
 - **Credit**: We will credit reporters in the release notes (unless you prefer to remain anonymous)
 
-## OWASP MCP Top 10 Compliance
+## OWASP MCP Top 10 Assessment
 
-This MCP server has been hardened following the [OWASP MCP Top 10](https://owasp.org/www-project-mcp-top-10/) guidelines:
+Assessed against the [OWASP MCP Top 10:2025](https://owasp.org/www-project-mcp-top-10/) (the list is
+in beta and may change). "Mitigated" means a control exists in code; "Residual risk" is stated
+openly. Nothing here is a guarantee: this is a small community project, reviewed by its maintainer.
 
-| OWASP ID | Risk | Mitigation Status |
-|----------|------|-------------------|
-| MCP01 | Tool Poisoning | Mitigated - Credential validation on startup |
-| MCP02 | Excessive Agency | Mitigated - Limited to SMS operations only |
-| MCP03 | Insecure Output Handling | Mitigated - Input validation prevents injection |
-| MCP04 | Tool Permission Boundaries | Mitigated - Local-only operation, no network exposure |
-| MCP05 | Prompt Injection via Tools | Mitigated - Input sanitization, URL detection, rate limiting |
-| MCP06 | Insecure Tool Input | Mitigated - Comprehensive validation (phone, message, sender ID, message ID) |
-| MCP07 | Third-Party Tool Risks | Mitigated - Credential verification, rate limiting |
-| MCP08 | Inadequate Logging | Mitigated - Structured JSON audit logging |
-| MCP09 | Lack of Security Documentation | Mitigated - This document |
-| MCP10 | Insecure Tool Communication | Mitigated - Stdio transport only (no HTTP exposure) |
+| OWASP ID | Risk | Status |
+|----------|------|--------|
+| MCP01 | Token Mismanagement & Secret Exposure | Mitigated: credentials only from environment variables, never logged or written to disk |
+| MCP02 | Privilege Escalation via Scope Creep | Mitigated: `DRY_RUN=true` is a hard floor, daily send cap, per-minute rate limit. Residual: no confirmation step in the server |
+| MCP03 | Tool Poisoning | Mitigated: static tool definitions, no dynamic tool loading |
+| MCP04 | Software Supply Chain & Dependency Tampering | Partly mitigated: one runtime dependency, lockfile, SHA-pinned Actions, digest-pinned Docker base, blocking high-severity `npm audit` in CI, Dependabot, CodeQL |
+| MCP05 | Command Injection & Execution | Mitigated: no shell or process execution; runtime argument validation; form-encoded request bodies |
+| MCP06 | Prompt Injection via Contextual Payloads | **Partly mitigated, residual risk remains** (see below) |
+| MCP07 | Insufficient Authentication & Authorization | Acceptable for local stdio: trust boundary is your MCP client; 46elks credentials verified at startup |
+| MCP08 | Lack of Audit and Telemetry | Mitigated: structured JSON audit log to stderr with masked numbers. Residual: no persistence or tamper protection |
+| MCP09 | Shadow MCP Servers | Out of code scope. Install only from the official repository linked in the README |
+| MCP10 | Context Injection & Over-Sharing | Mitigated by minimisation: numbers masked by default, account email/mobile/ID not returned, long bodies truncated |
 
-### MCP01/MCP07: Credential Validation
+### MCP06: prompt injection through inbound SMS (residual risk)
 
-The server validates 46elks API credentials on startup before accepting any tool calls:
+Anyone can text your 46elks number. Message bodies returned by `get_sms_messages` and
+`check_sms_status` are therefore **untrusted input** that reaches the model, and the same model can
+call `send_sms`. The server cannot fully prevent a model from being misled. Controls in place:
+
+- Inbound bodies are labelled as untrusted, stripped of control characters and truncated (320 chars).
+- Tool descriptions tell the model not to follow instructions found in message content.
+- `DRY_RUN=true` cannot be switched off by a tool call, and real sends are capped per minute and
+  per day (`DAILY_SMS_LIMIT`, default 50).
+
+What you should do: **require human approval for `send_sms` in your MCP client**, keep `DRY_RUN=true`
+unless you are deliberately sending, and keep the daily cap low. URL detection in outgoing messages
+is a phishing warning only; it does not address inbound injection.
+
+### MCP02: dry run is enforced by the server
+
+If the server is started with `DRY_RUN=true`, a tool call with `dry_run: false` is ignored, the
+response says so, and an `audit_warning` event (`dry_run_override_blocked`) is logged. A tool call
+can only ever turn dry run **on**. To send real SMS, start the server with `DRY_RUN=false`.
+
+### MCP05: input handling
+
+Tool arguments are type-checked at runtime (not only by TypeScript). The values sent to 46elks are
+the validated forms: phone numbers with whitespace/punctuation removed, messages with control
+characters stripped. Message IDs are validated and URL-encoded.
+
+- **Phone numbers**: international format required (+46...), placeholder numbers blocked
+- **Messages**: control characters stripped, length limits, URL detection warning
+- **Sender IDs**: common impersonation words blocked (BANK, POLICE, etc.)
+- **Message IDs**: alphanumeric only
+- **Network**: 15 second timeout on every 46elks request
+
+### MCP01/MCP07: credential validation on startup
 
 ```
 ✓ Configuration validated
@@ -65,37 +98,26 @@ The server validates 46elks API credentials on startup before accepting any tool
 ✓ MCP SMS Server running on stdio
 ```
 
-If credentials are invalid, the server will not start:
+If credentials are invalid, the server does not start.
 
-```
-✗ 46elks credential verification failed: 401 Unauthorized
-```
+### MCP02: rate limits
 
-### MCP05/MCP07: Rate Limiting
+| Control | Default | Environment variable |
+|---------|---------|---------------------|
+| `send_sms` per minute | 10 | `RATE_LIMIT_SMS_PER_MINUTE` |
+| Other tools per minute | 60 | `RATE_LIMIT_QUERIES_PER_MINUTE` |
+| Real SMS per 24 hours | 50 (`0` disables) | `DAILY_SMS_LIMIT` |
 
-The server implements rate limiting to prevent abuse:
+Invalid values (for example `abc`) fall back to the default instead of disabling the limit.
 
-| Tool Category | Default Limit | Environment Variable |
-|--------------|---------------|---------------------|
-| SMS Sending (`send_sms`) | 10 per minute | `RATE_LIMIT_SMS_PER_MINUTE` |
-| Query Tools (all others) | 60 per minute | `RATE_LIMIT_QUERIES_PER_MINUTE` |
+### MCP10: data minimisation
 
-When rate limits are exceeded:
+- Phone numbers returned to the model are masked (`+467****567`). Set `SHOW_FULL_PHONE_NUMBERS=true` to
+  return them in full.
+- `check_account_balance` returns balance, currency and account name only.
+- Message bodies are truncated and labelled untrusted.
 
-```
-Error (RATE_LIMIT_EXCEEDED): Rate limit exceeded for SMS sending. Please wait 45 seconds before trying again.
-```
-
-### MCP05/MCP06: Input Sanitization
-
-All tool inputs are validated and sanitized:
-
-- **Phone numbers**: International format required (+46...), placeholder numbers blocked
-- **Messages**: Control characters stripped, URL detection warnings, length limits
-- **Sender IDs**: Impersonation attempts blocked (BANK, POLICE, etc.)
-- **Message IDs**: Alphanumeric only, prevents injection attacks
-
-### MCP08: Audit Logging
+### MCP08: audit logging
 
 All tool invocations are logged to stderr in JSON format:
 
@@ -105,7 +127,7 @@ All tool invocations are logged to stderr in JSON format:
     "timestamp": "2025-02-05T12:34:56.789Z",
     "tool": "send_sms",
     "params": {
-      "to": "+467****123",
+      "to": "+467****567",
       "message_length": 42,
       "dry_run": false
     },
@@ -117,9 +139,9 @@ All tool invocations are logged to stderr in JSON format:
 ```
 
 **Privacy protections in audit logs:**
-- Phone numbers are masked (+467****123)
-- Message content is replaced with length only
-- Only metadata (direction, limit, message_id) is logged in full
+- Phone numbers are masked, including numbers that appear inside upstream error messages
+- Message content is replaced with its length
+- `dryRun` records the effective mode, after the server-enforced floor
 
 ## Security Best Practices for Users
 
@@ -142,11 +164,15 @@ ELKS_API_PASSWORD=your-api-password
 ELKS_PHONE_NUMBER=+46XXXXXXXXX
 
 # Safety settings
-DRY_RUN=true  # Set to false for production
+DRY_RUN=true  # Enforced by the server; set to false only to send real SMS
 
-# Optional rate limiting
+# Optional limits
 RATE_LIMIT_SMS_PER_MINUTE=10
 RATE_LIMIT_QUERIES_PER_MINUTE=60
+DAILY_SMS_LIMIT=50            # 0 disables the daily cap
+
+# Optional privacy setting
+SHOW_FULL_PHONE_NUMBERS=false # true returns unmasked numbers to the model
 ```
 
 ## Scope
@@ -176,7 +202,11 @@ This MCP server includes the following security features:
 - **URL detection**: Warns about links in SMS content
 - **Anti-spoofing**: Blocks impersonation attempts (BANK, POLICE, etc.)
 - **Message ID validation**: Prevents injection through malformed IDs
-- **Dry run mode**: Prevents accidental SMS sending during development
+- **Server-enforced dry run**: `DRY_RUN=true` cannot be switched off by a tool call
+- **Daily send cap**: Limits real SMS per 24 hours (`DAILY_SMS_LIMIT`)
+- **Untrusted-content handling**: Inbound SMS labelled, truncated and masked before reaching the model
+- **Data minimisation**: Account email, mobile number and ID are not returned to the model
+- **Runtime argument validation**: Tool arguments are type-checked, not only cast
 - **No credential storage**: Credentials passed via environment variables only
 - **Local-only operation**: No HTTP endpoints, stdio transport only
 - **Dependency scanning**: Automated Dependabot alerts and updates

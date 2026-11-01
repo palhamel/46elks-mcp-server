@@ -266,3 +266,16 @@ describe('control character stripping', () => {
     expect(result.isValid).toBe(true);
   });
 });
+
+describe('values sent to the API (OWASP MCP05/MCP06)', () => {
+  it('normalizePhoneNumber returns the validated, cleaned form', async () => {
+    const { normalizePhoneNumber } = await import('../validation.js');
+    expect(normalizePhoneNumber('+46 70-123 45 67')).toBe('+46701234567');
+  });
+
+  it('sanitizeSmsMessage removes control characters and trims', async () => {
+    const { sanitizeSmsMessage } = await import('../validation.js');
+    expect(sanitizeSmsMessage('  Hi\x00 there\x1b  ')).toBe('Hi there');
+    expect(sanitizeSmsMessage('line1\nline2')).toBe('line1\nline2');
+  });
+});

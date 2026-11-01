@@ -51,6 +51,20 @@ export const validatePhoneNumber = (phoneNumber: string): { isValid: boolean; er
 };
 
 /**
+ * Normalise a phone number to the exact form that was validated (whitespace and
+ * punctuation removed). This is the value that must be sent to the API (MCP05, MCP06).
+ */
+export const normalizePhoneNumber = (phoneNumber: string): string =>
+  phoneNumber.replace(/[\s\-\(\)\.]/g, '');
+
+/**
+ * Return the message in the exact form that was validated: trimmed, with control
+ * characters removed. This is the value that must be sent to the API (MCP05, MCP06).
+ */
+export const sanitizeSmsMessage = (message: string): string =>
+  stripControlCharacters(message.trim());
+
+/**
  * Strip control characters from message (MCP05, MCP06)
  * Removes ASCII control characters except newlines/tabs which are valid in SMS
  */

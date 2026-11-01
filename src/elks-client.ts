@@ -43,31 +43,20 @@ interface ElksApiMessage {
   cost?: number;
 }
 
+// Abort hung requests instead of blocking the tool call forever
+const REQUEST_TIMEOUT_MS = 15_000;
+
 export class ElksClient {
   private readonly baseUrl = 'https://api.46elks.com/a1';
   private readonly auth: string;
   private readonly phoneNumber: string;
   private readonly dryRun: boolean;
 
-  constructor(userConfig?: {
-    elksUsername: string;
-    elksPassword: string;
-    elksPhoneNumber: string;
-    dryRun: boolean;
-  }) {
-    if (userConfig) {
-      // Use provided user configuration
-      const credentials = `${userConfig.elksUsername}:${userConfig.elksPassword}`;
-      this.auth = `Basic ${Buffer.from(credentials).toString('base64')}`;
-      this.phoneNumber = userConfig.elksPhoneNumber;
-      this.dryRun = userConfig.dryRun;
-    } else {
-      // Use global configuration (for backward compatibility)
-      const credentials = `${config.elksUsername}:${config.elksPassword}`;
-      this.auth = `Basic ${Buffer.from(credentials).toString('base64')}`;
-      this.phoneNumber = config.elksPhoneNumber;
-      this.dryRun = config.dryRun;
-    }
+  constructor() {
+    const credentials = `${config.elksUsername}:${config.elksPassword}`;
+    this.auth = `Basic ${Buffer.from(credentials).toString('base64')}`;
+    this.phoneNumber = config.elksPhoneNumber;
+    this.dryRun = config.dryRun;
   }
 
   /**
@@ -77,6 +66,7 @@ export class ElksClient {
     try {
       const response = await fetch(`${this.baseUrl}/Me`, {
         method: 'GET',
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         headers: {
           Authorization: this.auth,
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -106,6 +96,7 @@ export class ElksClient {
     try {
       const response = await fetch(`${this.baseUrl}/Me`, {
         method: 'GET',
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         headers: {
           Authorization: this.auth,
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -145,7 +136,8 @@ export class ElksClient {
     });
 
     // Add dry run parameter if enabled
-    const isDryRun = dryRun !== undefined ? dryRun : this.dryRun;
+    // Server-level DRY_RUN is a hard floor: a per-call value can never switch it off (MCP02)
+    const isDryRun = this.dryRun || (dryRun ?? false);
     if (isDryRun) {
       formData.append('dryrun', 'yes');
     }
@@ -157,6 +149,7 @@ export class ElksClient {
 
     const response = await fetch(`${this.baseUrl}/sms`, {
       method: 'POST',
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       headers: {
         Authorization: this.auth,
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -190,6 +183,7 @@ export class ElksClient {
 
     const response = await fetch(`${this.baseUrl}/sms?${params}`, {
       method: 'GET',
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       headers: {
         Authorization: this.auth,
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -218,8 +212,9 @@ export class ElksClient {
    * Get specific SMS message by ID
    */
   async getMessageById(messageId: string): Promise<ElksMessage> {
-    const response = await fetch(`${this.baseUrl}/sms/${messageId}`, {
+    const response = await fetch(`${this.baseUrl}/sms/${encodeURIComponent(messageId)}`, {
       method: 'GET',
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       headers: {
         Authorization: this.auth,
         'Content-Type': 'application/x-www-form-urlencoded',

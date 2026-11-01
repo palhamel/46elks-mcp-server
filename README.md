@@ -5,7 +5,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?logo=typescript&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker&logoColor=white)
 [![CI](https://github.com/palhamel/46elks-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/palhamel/46elks-mcp-server/actions/workflows/ci.yml)
-[![OWASP MCP Top 10](https://img.shields.io/badge/OWASP_MCP-Top_10_Compliant-green.svg)](./SECURITY.md)
+[![OWASP MCP Top 10](https://img.shields.io/badge/OWASP_MCP-Top_10_Assessed-blue.svg)](./SECURITY.md)
 
 MCP server for 46elks SMS API - Send SMS messages through Swedish telecommunications infrastructure.
 
@@ -126,7 +126,7 @@ Send SMS messages with validation and cost estimation.
 - `message` (required): SMS message text
 - `from` (optional): Custom sender ID or phone number (see security notes below)
 - `flashsms` (optional): Set to "yes" for flash SMS (see Flash SMS limitations below)
-- `dryRun` (optional): Override environment DRY_RUN setting
+- `dry_run` (optional): Force test mode on. It can never turn off a server-level `DRY_RUN=true`
 
 **FROM Parameter Security:**
 - **Default**: Uses your configured `ELKS_PHONE_NUMBER` (recommended for replies)
@@ -476,7 +476,7 @@ This MCP server has been hardened following [OWASP MCP Top 10](https://owasp.org
 ### API & Credential Security
 - API credentials are passed through MCP client configuration (not stored in code)
 - **Credential validation on startup** - Server fails fast if credentials are invalid
-- Dry run mode prevents accidental SMS sending during development
+- Dry run mode prevents accidental SMS sending; `DRY_RUN=true` is enforced by the server and cannot be overridden by a tool call
 - Input validation prevents malicious phone numbers and messages
 - No sensitive data is logged or stored
 
@@ -484,14 +484,20 @@ This MCP server has been hardened following [OWASP MCP Top 10](https://owasp.org
 
 - **Rate Limiting**: Prevents abuse through rapid tool calls (10 SMS/min, 60 queries/min)
 - **Audit Logging**: Structured JSON logs for security monitoring (phone numbers masked)
-- **Input Sanitization**: Control character stripping, URL detection warnings
+- **Input Sanitization**: Runtime argument validation, control character stripping, URL detection warnings
+- **Daily Send Cap**: 50 real SMS per 24 hours by default
+- **Untrusted Content Labelling**: Inbound SMS text is labelled, truncated and phone numbers are masked before reaching the model
 - **Message ID Validation**: Prevents injection through malformed IDs
 
 Configure rate limits via environment variables:
 ```bash
 RATE_LIMIT_SMS_PER_MINUTE=10      # Default: 10
 RATE_LIMIT_QUERIES_PER_MINUTE=60  # Default: 60
+DAILY_SMS_LIMIT=50                # Default: 50 (0 disables)
+SHOW_FULL_PHONE_NUMBERS=false     # true returns unmasked numbers to the model
 ```
+
+> **Prompt injection:** anyone can text your 46elks number, and the AI can read that text. Require human approval for `send_sms` in your MCP client. See [SECURITY.md](./SECURITY.md#mcp06-prompt-injection-through-inbound-sms-residual-risk).
 
 ### Enhanced Security Features
 
