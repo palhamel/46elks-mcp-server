@@ -155,3 +155,30 @@ describe('Rate Limiting', () => {
     });
   });
 });
+
+describe('limit configuration (fail closed)', () => {
+  it('parseLimitEnv falls back to the default for invalid values instead of NaN', async () => {
+    const { parseLimitEnv } = await import('../rate-limit.js');
+    expect(parseLimitEnv('abc', 10)).toBe(10);
+    expect(parseLimitEnv('', 10)).toBe(10);
+    expect(parseLimitEnv(undefined, 10)).toBe(10);
+    expect(parseLimitEnv('-5', 10)).toBe(10);
+    expect(parseLimitEnv('0', 10)).toBe(10);
+    expect(parseLimitEnv('25', 10)).toBe(25);
+  });
+
+  it('parseLimitEnv allows 0 when min is 0 (daily cap disabled)', async () => {
+    const { parseLimitEnv } = await import('../rate-limit.js');
+    expect(parseLimitEnv('0', 50, 0)).toBe(0);
+  });
+
+  it('enforces the daily SMS cap (default 50)', async () => {
+    const { checkDailySmsLimit, resetAllRateLimiters } = await import('../rate-limit.js');
+    resetAllRateLimiters();
+    for (let i = 0; i < 50; i++) {
+      expect(() => checkDailySmsLimit()).not.toThrow();
+    }
+    expect(() => checkDailySmsLimit()).toThrow(/Daily SMS limit/);
+    resetAllRateLimiters();
+  });
+});

@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+Review against OWASP MCP Top 10:2025 (see SECURITY.md for the corrected mapping).
+- **MCP02:** `DRY_RUN=true` is now a hard floor. A tool call with `dry_run: false` is ignored,
+  reported to the model, and logged as `dry_run_override_blocked`. **Behaviour change:** previously
+  the per-call value overrode the environment.
+- **MCP02:** New daily cap on real SMS sends (`DAILY_SMS_LIMIT`, default 50, `0` disables).
+- **MCP06:** Inbound SMS bodies are labelled untrusted, stripped of control characters and truncated.
+- **MCP10:** Phone numbers are masked in model-facing output (`SHOW_FULL_PHONE_NUMBERS=true` to
+  opt out). `check_account_balance` no longer returns email, mobile number or account ID.
+- **MCP05:** Tool arguments are validated at runtime. The sanitised message and normalised phone
+  number are what is sent to 46elks (previously the unsanitised originals were sent).
+  Message IDs are URL-encoded.
+- **MCP08:** Invalid rate-limit environment values fall back to defaults instead of disabling the
+  limiter. Phone numbers inside upstream error messages are masked in audit logs.
+- 15 second timeout on all 46elks requests.
+- Removed unused multi-user client code and legacy `PORT`/`WEBHOOK_URL` configuration.
+
+### Changed
+- SECURITY.md and README now use the official OWASP MCP Top 10:2025 names and state residual risk
+  (prompt injection through inbound SMS). README badge changed from "Compliant" to "Assessed".
+
 ## [0.3.2] - 2026-05-06
 
 ### Changed

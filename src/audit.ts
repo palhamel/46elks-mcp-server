@@ -15,16 +15,7 @@ export interface AuditEntry {
   durationMs?: number;
 }
 
-/**
- * Mask phone numbers for audit logging
- * +46701234567 -> +467****567
- */
-function maskPhoneNumber(phone: string): string {
-  if (!phone || phone.length < 8) return '****';
-  const prefix = phone.slice(0, 4);
-  const suffix = phone.slice(-3);
-  return `${prefix}****${suffix}`;
-}
+import { maskPhoneNumber, maskPhoneNumbersInText } from './safety.js';
 
 /**
  * Sanitize parameters for audit logging
@@ -73,7 +64,8 @@ export function auditLog(
   };
 
   if (entry.error) {
-    auditEntry.error = entry.error;
+    // Upstream error bodies can echo recipient numbers; mask them (MCP08)
+    auditEntry.error = maskPhoneNumbersInText(entry.error);
   }
 
   if (entry.durationMs !== undefined) {
